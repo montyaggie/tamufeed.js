@@ -82,7 +82,8 @@ And for #3, the templates can be copied verbatim out of the markup.html sample.
 ## MARKUP
 
 The one change you must make to your HTML is to have an element where you want
-the app to insert its content e.g. <div id="tamufeeds"></div>
+the app to insert its content e.g.
+    <div id="tamufeeds"></div>
 
 ## STYLING
 
