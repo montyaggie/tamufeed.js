@@ -1,48 +1,12 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-Title:        TAMU.feed.js
-Author:       Monty Dickerson
-Version:      0.09
-Date:         10/15/2012
+TAMU.feed.js
 
-Description:  This code fills the body element identified by the 
-  TAMU.feed.selector.stage string with an HTML of the feed pulled 
-  from the TAMU.feed.url RSS location.  It is specialized to utilize the
-  markup from the cal.tamu.edu server, pulling the semantic data
-  out of the RSS description tag.
-
-Dependencies(2):
-  1. Google Feed API should continue w/o incompatible changes until 4/20/15.
-    » e.g. //www.google.com/jsapi must have been loaded!
-  2. jQuery 1.x must have been loaded!
-    » e.g. //ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js
-
-Options (in TAMU.feed object):
-  • "sort": "netspeed" puts the script in turbo, asynchronous mode: it will
-  print feeds in the order that they speed across the net.
-  • "fetchEntries": number of entries to fetch from Google, for each feed
-  • "wantEntries" : number of non-historical entries wanted to show
-
-Developers:
-  Google Feeds API's result object structure is documented at this web page
-  https://developers.google.com/feed/v1/jsondevguide#resultJson
-
-Bugs:
-  - "All day" time of events are not handled correctly
-  - googfeed.setNumEntries() never fetches more than 10 entries per feed: why?
-
-Future Implementation:
-  - Localize time for the client's TimeZone
-  - timeTemplate is not yet utilized. This version lets the dtstart & dtend 
-  strings pass right through presuming the server formatted them correctly.
-  - Categories
-
-Release notes:
-  + Event type entries are distinguished from regular news story entries
+New:
+  + Truncate entry summary to 300 characters
+  + Styled, templated calendarday element added to entry view & template
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 (function(){ 
-
-  var debugging = false;
 
   // Initial Setup
   // -------------
@@ -52,13 +16,15 @@ Release notes:
   if ("undefined"===typeof TAMU.feedapp) TAMU.feedapp = {};
   if ("undefined"===typeof TAMU.feedapp.element) TAMU.feedapp.element = {};
 
-  TAMU.feedapp.VERSION = '0.09'; ////////////////
+  TAMU.feedapp.VERSION = '0.1.0';   //
+  var debugging = false;            //
 
   // Constants
-  var millisecondsBeforeHistorical = 1800000;  //30min slack after dtstart
-  //var millisecondsBeforeHistorical = 3600000;//60min slack after dtstart
+  var truncatedStringMaxLength = 300;
+  var millisecondsBeforeHistorical   = 1800000; // 30min slack after dtstart
+  //var millisecondsBeforeHistorical = 3600000; // 60min slack after dtstart
 
-  // Options
+  // Configuration
   if (!TAMU.feed.sort) TAMU.feed.sort = false;
   if (!TAMU.feed.fetchEntries) TAMU.feed.fetchEntries = 4;
   if (!TAMU.feed.wantEntries ) TAMU.feed.wantEntries  = 99;
@@ -117,26 +83,35 @@ Release notes:
     TAMU.feed.selector.timeTemplate     = "#timeTemplate";
   if ("undefined"===typeof TAMU.feed.selector.dateTemplate) 
     TAMU.feed.selector.dateTemplate     = "#dateTemplate";
+  if ("undefined"===typeof TAMU.feed.selector.calendardayTemplate) 
+    TAMU.feed.selector.calendardayTemplate = "#calendardayTemplate";
+  if ("undefined"===typeof TAMU.feed.selector.encasedTemplate) 
+    TAMU.feed.selector.encasedTemplate = "#encasedTemplate";
 
   // Bind element from selector
   TAMU.feedapp.element.stage = $(TAMU.feed.selector.stage);
 
   // Load Templates
-  var timeTemplate    = $(TAMU.feed.selector.timeTemplate).html();
   var dateTemplate    = $(TAMU.feed.selector.dateTemplate).html();
   var propertyTemplate= $(TAMU.feed.selector.propertyTemplate).html();
   var feedTemplate    = $(TAMU.feed.selector.feedTemplate).html();
   var entryTemplate   = $(TAMU.feed.selector.entryTemplate).html();
+  var encasedTemplate = $(TAMU.feed.selector.encasedTemplate).html();
+  var calendardayTemplate = $(TAMU.feed.selector.calendardayTemplate).html();
 
   // Fallback Templates
   var timeTemplate = timeTemplate || '{{g}}:{{i}}{{a}}';
   var dateTemplate = dateTemplate || '{{l}}, {{F}} {{j}}<sup>{{S}}</sup>, {{Y}}';
   var propertyTemplate= propertyTemplate ||
     '<{{element}} class="{{key}}" title="{{title}}">{{value}}</{{element}}>';
-  var feedTemplate    = feedTemplate ||
+  var feedTemplate  = feedTemplate ||
     "<div class='feed channel {{feedKey}} {{attributes}}' data-source='{{feedUrl}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h2 class='feed-title'>{{title}}</h2> \n<div class='feed-description'>{{description}}</div> \n{{entries}}\n</div>\n";
-  var entryTemplate   = entryTemplate ||
+  var entryTemplate = entryTemplate ||
     "<div class='item entry {{tags}} {{attributes}}' data-categories='{{tags}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h3><a href='{{link}}' class='entry-title'>{{title}}</a></h3> \n{{subtitle}} \n{{summary}} \n{{author}} \n{{location}} \n{{pubDate}} \n{{time}} \n<div class='share'> \n<span class='facebook social unshine'> \n <a href='http://www.facebook.com/sharer.php?u={{linkencoded}}' title='Share on this Facebook »'>Share this on Facebook » </a> \n</span><span class='twitter social unshine'> \n<a href='http://twitter.com/home?status={{linkencoded}}' title='Tweet this »'>Share this on Twitter » </a> \n</span><span class='linkedin social unshine'> \n<a href='http://www.linkedin.com/shareArticle?url={{linkencoded}}' title='Share on this LinkedIn »'>Share this on LinkedIn » </a> \n</span> \n</div> \n{{categories}} \n{{bookmark}} \n{{description}} \n</div>";
+  var calendardayTemplate = calendardayTemplate || 
+    '<span class="dayOfMonth">{{j}}</span><span class="month">{{M}}</span>';
+  var encasedTemplate = encasedTemplate || 
+    '<table class="{{key}}"><tbody><tr><td class="{{key}}" {{dataAttr}}>{{value}}</td></tr></tbody></table>';
 
 
   // Template Function
@@ -189,16 +164,32 @@ Release notes:
   }//function dt
 
 
+  // Trunc String function
+  // ---------------------
+  var trunc = function(str,n,useWordBoundary){
+  //http://stackoverflow.com/questions/1199352/smart-way-to-shorten-long-strings-with-javascript
+    var tooLong, s_;
+    if ("undefined"===typeof n) n=truncatedStringMaxLength;
+    tooLong = str.length>n;
+    if (!str || !tooLong) return str;
+    if ("undefined"===typeof useWordBoundary) useWordBoundary=true;
+    s_ = str.substr(0,n-1);
+    s_ = useWordBoundary ? s_.substr(0,s_.lastIndexOf(' ')) : s_;
+    return  s_ + '…';
+  }//function
+
+
   // View Functions
   // ==============
 
-  var viewProperty = function(key,val,data){
+  var viewProperty = function(key,val,data,template){
   //This function builds the view for a property.
-    //if (debugging) debug("» Property View: key="+key);
+    //debug("» Property View: key="+key);
+    if (!template) template = propertyTemplate;
     var dataAttr = "";
     if ("undefined"!==typeof data) 
       $.each(data, function(key,val){ dataAttr += ' data-'+key+'="'+val+'"' });
-    return !val ? "" : t(propertyTemplate,{
+    return !val ? "" : t(template,{
          "key"      : key
         ,"value"    : val
         ,"dataAttr" : dataAttr
@@ -208,57 +199,55 @@ Release notes:
 
   var viewEntry = function(index,entry,quantity){
   //This function builds the view for an entry.
-    var thedate,thetime;
+    var day,timespan,dtstart,dtend,calendarday;
     var attributes = ["even","odd "][index%2];
     if (entry.event)      attributes += " vevent";
     if (entry.historical) attributes += " historical";
     if (entry.dtstart) { //---------------------
-      //-----DAY-----
+      timespan = dtstart = viewProperty("dtstart",entry.dtstart,{"iso8601":entry.dtstartISO8601});
       if ("Invalid Date"===entry.start.toLocaleDateString()) 
-           thedate = entry.publishedDate || entry.dstartISO8601;
-      else thedate = t(dateTemplate,dt(entry.start));
-      //-----DAY-----
-      //entry.dtstart = t(timeTemplate,dt(entry.start));
-      thedate = viewProperty("date",thedate);
-      thetime = viewProperty("dtstart",entry.dtstart,{"iso8601":entry.dtstartISO8601});
-      //-----ENDINGTIME-----
+        day = entry.publishedDate || entry.dstartISO8601;
+      else 
+        day = t(dateTemplate,dt(entry.start));
+      calendarday = t(calendardayTemplate,dt(entry.start));
       if (entry.dtend) {
-        //if ("Invalid Date"!==entry.end.toLocaleDateString()) entry.dtend = t(timeTemplate,dt(entry.end));
-        thetime += "&ndash;";
-        thetime += viewProperty("dtend",entry.dtend,{"iso8601":entry.dtendISO8601});
+        dtend = viewProperty("dtend",entry.dtend,{"iso8601":entry.dtendISO8601});
+        timespan = timespan + "&ndash;" + dtend;
       }//if dtend
-      //-----ENDINGTIME-----
-      thetime = thedate + thetime;
+      day = viewProperty("date",day);
+      timespan = day + timespan;
     }//if dtstart ---------------------
-    else thetime = viewProperty("date",
+    else timespan = viewProperty("date",
       t(dateTemplate,dt(new Date(entry.publishedDate)))
     );
     return {
        "title"      : entry.title
       ,"link"       : entry.link
       ,"linkencoded": encodeURIComponent(entry.link)
-      ,"tags"       : "" //entry.tags                             //BUG
-      ,"categories" : "" //viewProperty("categories",entry.tags)  //BUG
+      ,"tags"       : ""
+      ,"categories" : ""
       ,"description": entry.description
       ,"index"      : index+1
       ,"quantity"   : quantity
       ,"attributes" : attributes
-      ,"dtstart"    : viewProperty("dtstart"   ,entry.dtstart)
-      ,"dtend"      : viewProperty("dtend"     ,entry.dtend)
-      ,"time"       : viewProperty("time"      ,thetime)
-      ,"bookmark"   : viewProperty("bookmark"  ,entry.link)
-      ,"subtitle"   : viewProperty("subtitle"  ,entry.subtitle)
-      ,"summary"    : viewProperty("summary"   ,entry.summary)
-      ,"location"   : viewProperty("location"  ,entry.location)
-      ,"pubDate"    : viewProperty("pubDate"   ,entry.publishedDate)
-      ,"author"     : viewProperty("author"    ,entry.author)
+      ,"dtstart"    : dtstart
+      ,"dtend"      : dtend
+      ,"date"       : day
+      ,"calendarday": viewProperty("calendarday",calendarday)
+      ,"time"       : viewProperty("time"       ,timespan)
+      ,"bookmark"   : viewProperty("bookmark"   ,entry.link)
+      ,"subtitle"   : viewProperty("subtitle"   ,entry.subtitle)
+      ,"summary"    : viewProperty("summary"    ,entry.summary,{},encasedTemplate)
+      ,"location"   : viewProperty("location"   ,entry.location)
+      ,"pubDate"    : viewProperty("pubDate"    ,entry.publishedDate)
+      ,"author"     : viewProperty("author"     ,entry.author)
     };
   }//function viewEntry
 
 
   var viewFeed = function(feedIndex){
   //This function builds the view for a feed.
-    if (debugging) debug("» Feed View");
+    debug("» Feed View");
     var entries = '';
     var novel = 0;
     var feedAttributes = ["even","odd "][feedIndex%2];
@@ -290,7 +279,7 @@ Release notes:
 
   var view = function(){
   //This function builds the view for all feeds, synchronously.
-    if (debugging) debug("» View");
+    debug("» View");
     $.each(TAMU.feed.url,function(feedIndex,feedUrl){
       TAMU.feedapp.element.stage.append(t(feedTemplate,viewFeed(feedIndex)));
     });
@@ -303,9 +292,9 @@ Release notes:
   var modelEntry = function(index,entry) {
   //This function models one entry. Presumes entry.content.
     var isoAttr;
-    entry.description = viewProperty("description"
-        ,entry.content.replace(/\brel="/ig,' class="') 
-    );//transform all REL → CLASS
+    //content: transform all REL → CLASS
+    entry.content = entry.content.replace(/\brel="/ig,' class="');
+    entry.description = viewProperty("description",entry.content);
     //--------------------------DATE/TIME--------------------------
     var dtstartEle  = $(entry.description).find(".dtstart");
     if (dtstartEle) {
@@ -328,25 +317,27 @@ Release notes:
     //--------------------------DATE/TIME--------------------------
     //entry.pubDate = new Date(entry.publishedDate);
     entry.location = $(entry.description).find(".location").text();
-    if (entry.location) {
-      entry.event = true;   //Entries having location are events.
+    if (entry.location) { // Event // Event // Event 
+      entry.event = true;
       entry.historical = (
         entry.start.getTime() < +Date.now() + millisecondsBeforeHistorical
       );//historical
-    }//if location (ergo, event)
+      entry.summary  = trunc($(entry.description).find(".summary").text())
+    } else { // Non-Event // Non-Event // Non-Event
+      entry.summary  = trunc(entry.content);
+    }
     entry.subtitle = $(entry.description).find(".subtitle").text();
-    entry.summary  = $(entry.description).find(".summary").text() 
-      || entry.content; //This failover is vital, for non-event entries.
+    entry.description = viewProperty("description",entry.content); //hidden
   }//function modelEntry
 
 
   var modelFeed = function(feedIndex,feed){
   //This function builds the model for a feed.
-    if (debugging) debug("» Model");
+    debug("» Model");
     $.extend(TAMU.feed.metadata[feedIndex],feed);
     //Enhance: Is it necessary to deep clone the google result.feed???
     //TAMU.feed.metadata[feedIndex]["quantity"] = TAMU.feed.metadata[feedIndex]["entries"].length;
-    if (debugging) debug("Feed "+(feedIndex+1)+"'s quantity of entries fetched is "+
+    debug("Feed "+(feedIndex+1)+"'s quantity of entries fetched is "+
         TAMU.feed.metadata[feedIndex]["entries"].length
     );
     $.each(TAMU.feed.metadata[feedIndex]["entries"],
@@ -362,7 +353,7 @@ Release notes:
 
   var controllerFeed = function(result,feedIndex) {
   //This function is the asynchronously-invoked controller for a feed.
-    if (debugging) debug("» Feed Controller");
+    debug("» Feed Controller");
     if ("undefined"===typeof TAMU.feed.metadata) TAMU.feed.metadata = {};
     TAMU.feed.metadata[feedIndex] = {};
     if (result.error) return TAMU.feedapp.element.stage.append(
@@ -387,17 +378,17 @@ Release notes:
 
   var controller = TAMU.feedapp.controller = function() {
   //This function is the asynchronously-invoked main controller.
-    if (debugging) debug("» Controller");
+    debug("» Controller");
     if ("object"!==typeof TAMU.feed.url) TAMU.feed.url = [TAMU.feed.url];
     TAMU.feed.quantity = TAMU.feedapp.countdown = TAMU.feed.url.length;
-    if (debugging) debug("--How many feeds? "+TAMU.feed.quantity);
+    debug("--How many feeds? "+TAMU.feed.quantity);
     TAMU.feedapp.element.stage.attr("data-feeds",TAMU.feed.quantity);
     TAMU.feedapp.element.stage.html(""); //Clear out static content from server.
     $.each(TAMU.feed.url,function(feedIndex,feedUrl){
       var googfeed = new google.feeds.Feed(feedUrl);
       googfeed.includeHistoricalEntries();//TEST
       googfeed.setNumEntries(TAMU.feed.fetchEntries);
-      if (debugging) debug("--Feed #"+(feedIndex+1)+"'s fetchEntires = "+TAMU.feed.fetchEntries);
+      debug("--Feed #"+(feedIndex+1)+"'s fetchEntires = "+TAMU.feed.fetchEntries);
       googfeed.load( //Asynchronously 
         function(result){ controllerFeed(result,feedIndex);}
       );

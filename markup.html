@@ -31,15 +31,22 @@
       alt="loading..." class="ajaxspinner" />
 </div>
 
-<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-<script type="text/html" id="timeTemplate" charset="utf-8"
->{{g}}:{{i}}{{a}}</script>
+<!-- -------------------------------------------------------------------- -->
+<script type="text/html" id="calendardayTemplate" charset="utf-8">
+<span class="dayOfMonth">{{j}}</span><span class="month">{{M}}</span>
+</script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="dateTemplate" charset="utf-8"
 >{{l}}, {{F}} {{j}}<sup>{{S}}</sup>, {{Y}}</script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="propertyTemplate" charset="utf-8">
   <span class="{{key}}" {{dataAttr}}>{{value}}</span>
+</script>
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+<script type="text/html" id="encasedTemplate" charset="utf-8">
+<table class="{{key}}"><tbody><tr><td class="{{key}}" {{dataAttr}}>
+  {{value}}
+</td></tr></tbody></table>
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="feedTemplate" charset="utf-8">
@@ -53,12 +60,15 @@
 </div>
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
-<script type="text/html" id="entryTemplate" charset="utf-8" data-schema="http://microformats.org/wiki/hcalendar">
+<script type="text/html" id="entryTemplate" charset="utf-8" 
+    data-schema="http://microformats.org/wiki/hcalendar">
 <div class="item entry {{tags}} {{attributes}}"
-  data-categories="{{tags}}" data-index="{{index}}" data-entries="{{quantity}}"
->
-  <h3><a href="{{link}}" class="entry-title">{{title}}</a></h3>
+  data-categories="{{tags}}" data-index="{{index}}" data-entries="{{quantity}}">
+<div class="feature">
+  {{calendarday}}
+  <h3><a href="{{link}}" class="entry-title title">{{title}}</a></h3>
   {{subtitle}}
+</div><div style="clear:left;"></div>
   {{summary}}
   {{author}}
   {{location}}
@@ -89,13 +99,12 @@
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" charset="utf-8"></script>
 <script src="https://www.google.com/jsapi" charset="utf-8">
-// Add get-parameter "key" if need to specify TAMU's API key.
+// Add a get parameter "key" if need to specify TAMU's API key.
 </script>
 <script src="TAMU.feed.js" charset="utf-8"></script>
 
-<script charset="utf-8">
-  if ("undefined"===typeof TAMU.feedapp.VERSION)
-    alert("Oops, TAMU feed script was not loaded.\n");
+<script>
+if ("undefined"===typeof TAMU.feedapp.VERSION) alert("TAMU.feed.js not loaded.");
 </script>
 
 </body>
