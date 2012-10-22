@@ -1,36 +1,37 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-TAMU.feed.js
+tamufeed.js
 
 New:
-  + Truncate entry summary to 300 characters
-  + Styled, templated calendarday element added to entry view & template
+  + Module pattern conformity
+  + Sort entries by pubDate, forward or reverse
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-(function(){ 
+;var tamufeed = (function(win,config) {
 
   // Initial Setup
   // -------------
   "use strict";
-  if ("undefined"===typeof TAMU) this.TAMU = {};
-  if ("undefined"===typeof TAMU.feed) TAMU.feed = {};
-  if ("undefined"===typeof TAMU.feedapp) TAMU.feedapp = {};
-  if ("undefined"===typeof TAMU.feedapp.element) TAMU.feedapp.element = {};
-
-  TAMU.feedapp.VERSION = '0.1.0';   //
-  var debugging = false;            //
-
-  // Constants
-  var truncatedStringMaxLength = 300;
-  var millisecondsBeforeHistorical   = 1800000; // 30min slack after dtstart
-  //var millisecondsBeforeHistorical = 3600000; // 60min slack after dtstart
+  var VERSION = '0.1.1';
 
   // Configuration
-  if (!TAMU.feed.sort) TAMU.feed.sort = false;
-  if (!TAMU.feed.fetchEntries) TAMU.feed.fetchEntries = 4;
-  if (!TAMU.feed.wantEntries ) TAMU.feed.wantEntries  = 99;
+  var debugging = config.debugging || false;
+  var feed    	= config.feed || [];
+  var entries 	= config.entries || [];
+  var element 	= config.element || {};
+  var async 		= config.async || false;
+  var sortorder = config.sort || "";
+  var fetchEntries = config.fetchEntries || 4;
+  var wantEntries  = config.wantEntries  || 99;
+  var truncatedStringMaxLength = config.truncatedStringMaxLength || 300; //chars
+  var millisecondsBeforeHistorical = config.millisecondsBeforeHistorical || 1800000;
+      // 30min slack after dtstart // 60min slack after dtstart
+  var selector = config.selector || {};
+  if ("string"===typeof selector) selector = {"stage":selector};
+  var feeduri = config.url;
+  if ("string"===typeof feeduri) feeduri = [feeduri];
 
   // Shims
-  Date.valueOf = Date.now = Date.now || function() { return +new Date; };
+  win.Date.valueOf = win.Date.now = win.Date.now || function() { return +new Date; };
   if ("undefined"===typeof console)
     console = (function(){ z = function(){}; return { 
       log:z ,trace:z ,count:z ,dir:z ,dirxml:z 
@@ -40,9 +41,8 @@ New:
   }})();
 
   // Debugging Functions
-  var debug,info,warn,error;
-  error = console.error || $.error;
-  debug = function(s){if (debugging) return console.debug(s);};
+  var error = console.error || $.error;
+  var debug = function(s){if (debugging) return console.debug(s);};
 
   // Prerequisite JS checkup //Enhance for AMD
   var good="", err="";
@@ -54,8 +54,31 @@ New:
   else good += "\nYou are running Google JS API with key: "+google.loader.ApiKey;
   if (err) { alert (err+"PLEASE FIX THESE PROBLEMS.\n\n"+good); return;}
 
-  // Url's
-  if ("undefined"===typeof TAMU.feed.url || !TAMU.feed.url) TAMU.feed.url = [
+  // CSS Selectors
+  selector.stage = selector.stage || "#tamufeed";
+  selector.propertyTemplate    = selector.propertyTemplate || "#propertyTemplate";
+  selector.entryTemplate       = selector.entryTemplate    || "#entryTemplate";
+  selector.feedTemplate        = selector.feedTemplate     || "#feedTemplate";
+  selector.timeTemplate        = selector.timeTemplate     || "#timeTemplate";
+  selector.dateTemplate        = selector.dateTemplate     || "#dateTemplate";
+  selector.encasedTemplate     = selector.encasedTemplate  || "#encasedTemplate";
+  selector.calendardayTemplate = selector.calendardayTemplate || "#calendardayTemplate";
+
+  // Bind element from selector
+  var element = {};
+  element.stage = $(selector.stage);
+  if (!element.stage) return alert("Script configuration problem: tamufeed.js did not find the HTML element.");
+
+  // Load Templates
+  var dateTemplate    = $(selector.dateTemplate).html();
+  var propertyTemplate= $(selector.propertyTemplate).html();
+  var feedTemplate    = $(selector.feedTemplate).html();
+  var entryTemplate   = $(selector.entryTemplate).html();
+  var encasedTemplate = $(selector.encasedTemplate).html();
+  var calendardayTemplate = $(selector.calendardayTemplate).html();
+
+  // Fallback URL's
+  if (!feeduri) feeduri = [
      "http://cal.tamu.edu/liberalarts/upcoming/?format=rss"
     ,"http://liberalarts.tamu.edu/feeds/collegenews.rss"
     ,"http://gdata.youtube.com/feeds/api/users/TAMUliberalarts/uploads"
@@ -63,41 +86,10 @@ New:
     ,"http://cal.tamu.edu/philosophy/upcoming/?format=rss"
     ,"http://cal.tamu.edu/perf/upcoming/?format=rss"
     ,"http://cal.tamu.edu/internationalstudies/upcoming/?format=rss"
+    ,"http://calendar.tamu.edu/?calendar_id=73&upcoming&format=rss"  //Stark
+    ,"http://calendar.tamu.edu/?calendar_id=103&upcoming&format=rss" //Forsyth
     ,"http://academyarts.tamu.edu/feed/"
-  ]
-
-  // CSS Selectors
-  if ("undefined"===typeof TAMU.feed.selector) 
-    TAMU.feed.selector = {}
-  else if ("string"===typeof TAMU.feed.selector) 
-    TAMU.feed.selector = {"stage":TAMU.feed.selector};
-  if ("undefined"===typeof TAMU.feed.selector.stage) 
-    TAMU.feed.selector.stage            = "#tamufeeds";
-  if ("undefined"===typeof TAMU.feed.selector.propertyTemplate) 
-    TAMU.feed.selector.propertyTemplate = "#propertyTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.entryTemplate) 
-    TAMU.feed.selector.entryTemplate    = "#entryTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.feedTemplate) 
-    TAMU.feed.selector.feedTemplate     = "#feedTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.timeTemplate) 
-    TAMU.feed.selector.timeTemplate     = "#timeTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.dateTemplate) 
-    TAMU.feed.selector.dateTemplate     = "#dateTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.calendardayTemplate) 
-    TAMU.feed.selector.calendardayTemplate = "#calendardayTemplate";
-  if ("undefined"===typeof TAMU.feed.selector.encasedTemplate) 
-    TAMU.feed.selector.encasedTemplate = "#encasedTemplate";
-
-  // Bind element from selector
-  TAMU.feedapp.element.stage = $(TAMU.feed.selector.stage);
-
-  // Load Templates
-  var dateTemplate    = $(TAMU.feed.selector.dateTemplate).html();
-  var propertyTemplate= $(TAMU.feed.selector.propertyTemplate).html();
-  var feedTemplate    = $(TAMU.feed.selector.feedTemplate).html();
-  var entryTemplate   = $(TAMU.feed.selector.entryTemplate).html();
-  var encasedTemplate = $(TAMU.feed.selector.encasedTemplate).html();
-  var calendardayTemplate = $(TAMU.feed.selector.calendardayTemplate).html();
+  ];
 
   // Fallback Templates
   var timeTemplate = timeTemplate || '{{g}}:{{i}}{{a}}';
@@ -105,7 +97,7 @@ New:
   var propertyTemplate= propertyTemplate ||
     '<{{element}} class="{{key}}" title="{{title}}">{{value}}</{{element}}>';
   var feedTemplate  = feedTemplate ||
-    "<div class='feed channel {{feedKey}} {{attributes}}' data-source='{{feedUrl}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h2 class='feed-title'>{{title}}</h2> \n<div class='feed-description'>{{description}}</div> \n{{entries}}\n</div>\n";
+    "<div class='feed channel {{feedKey}} {{attributes}}' data-source='{{feedUrl}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h2 class='feed-title'>{{title}}</h2> \n<div class='feed-description'>{{description}}</div> \n{{entries}}\n</div>\n"; 
   var entryTemplate = entryTemplate ||
     "<div class='item entry {{tags}} {{attributes}}' data-categories='{{tags}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h3><a href='{{link}}' class='entry-title'>{{title}}</a></h3> \n{{subtitle}} \n{{summary}} \n{{author}} \n{{location}} \n{{pubDate}} \n{{time}} \n<div class='share'> \n<span class='facebook social unshine'> \n <a href='http://www.facebook.com/sharer.php?u={{linkencoded}}' title='Share on this Facebook »'>Share this on Facebook » </a> \n</span><span class='twitter social unshine'> \n<a href='http://twitter.com/home?status={{linkencoded}}' title='Tweet this »'>Share this on Twitter » </a> \n</span><span class='linkedin social unshine'> \n<a href='http://www.linkedin.com/shareArticle?url={{linkencoded}}' title='Share on this LinkedIn »'>Share this on LinkedIn » </a> \n</span> \n</div> \n{{categories}} \n{{bookmark}} \n{{description}} \n</div>";
   var calendardayTemplate = calendardayTemplate || 
@@ -116,8 +108,9 @@ New:
 
   // Template Function
   // -----------------
-  var t = TAMU.t = function(st,d) { // (string, dictionary)
+  var t = function(st,d) { // (string, dictionary)
   //Template function uses the dictionary to replace keys w/values in the string
+    if ("string"!==typeof st) throw "t() 1st parameter must be a string; not "+typeof st;
     for (var key in d) st = st.replace(new RegExp('{{'+key+'}}', 'ig'), d[key]);
     return st.replace(/({{[^{]*}})/ig,'');
   }//t
@@ -125,7 +118,7 @@ New:
 
   // Date/Time Function
   // ------------------
-  var dt = TAMU.dt = function(d) {
+  var dt = function(d) {
   //Returns an object that break down date parts, ala sprintf date format.
     if (!d.getMinutes) error("Invalid dt(parameter) was "+typeof d);
     var minutes = d.getMinutes();
@@ -179,6 +172,23 @@ New:
   }//function
 
 
+  // Comparison functions
+  // ---------------------
+
+  var byPubDate = function(a,b) {
+    a = "object"===typeof a.pubDate ? a.pubDate.getTime() : 0; //e.g. 1227886896000
+    b = "object"===typeof b.pubDate ? b.pubDate.getTime() : 0;
+    return  a > b;
+  }//function
+
+  var byReversePubDate = function(a,b) {
+    a = "object"===typeof a.pubDate ? a.pubDate.getTime() : 0;
+    b = "object"===typeof b.pubDate ? b.pubDate.getTime() : 0;
+    return  a < b;
+  }//function
+
+
+
   // View Functions
   // ==============
 
@@ -200,8 +210,8 @@ New:
   var viewEntry = function(index,entry,quantity){
   //This function builds the view for an entry.
     var day,timespan,dtstart,dtend,calendarday;
-    var attributes = ["even","odd "][index%2];
-    if (entry.event)      attributes += " vevent";
+    var attributes = ["odd ","even"][index%2];
+    if (entry.type)      attributes += " vevent";
     if (entry.historical) attributes += " historical";
     if (entry.dtstart) { //---------------------
       timespan = dtstart = viewProperty("dtstart",entry.dtstart,{"iso8601":entry.dtstartISO8601});
@@ -245,43 +255,42 @@ New:
   }//function viewEntry
 
 
-  var viewFeed = function(feedIndex){
+  var viewFeed = function(f){
   //This function builds the view for a feed.
-    debug("» Feed View");
-    var entries = '';
+    debug("» viewFeed #"+(f+1));
+    var markup = '';
     var novel = 0;
-    var feedAttributes = ["even","odd "][feedIndex%2];
-    var quantity = TAMU.feed.metadata[feedIndex]["entries"].length;
-    if (quantity) {
-      $.each(TAMU.feed.metadata[feedIndex]["entries"],
+    var feedAttributes = ["odd ","even"][f%2];
+    if (feed[f]["length"]) {
+      $.each(entries[f],
         function(index,entry){
-          var ve = viewEntry(index,entry,quantity);
+          var ve = viewEntry(index,entry,feed[f]["length"]);
           if ("undefined"===typeof ve.historical) novel++;
-          if (novel>TAMU.feed.wantEntries) ve.attributes += " over";
-          entries += t(entryTemplate,ve);
+          if (novel>wantEntries) ve.attributes += " over";
+          markup += t(entryTemplate,ve);
         }//function
       );
-    } else entries = '<p class="noentry">Nothing to report.</p>';
+    } else markup = '<p class="noentry">Nothing to report.</p>';
     return {  
-      "feedIndex"   : "feed"+(feedIndex+1)
+      "feedIndex"   : "feed"+(f+1)
       ,"attributes" : feedAttributes
-      ,"index"      : feedIndex+1
-      ,"feedQuantity": TAMU.feed.quantity
-      ,"quantity"   : quantity
-      ,"entries"    : entries
-      ,"feedUrl"    : TAMU.feed.metadata[feedIndex]["feedUrl"]
-      ,"title"      : TAMU.feed.metadata[feedIndex]["title"]
-      ,"author"     : TAMU.feed.metadata[feedIndex]["author"]
-      ,"description": TAMU.feed.metadata[feedIndex]["description"]
+      ,"index"      : f+1
+      ,"feedQuantity": feed.quantity
+      ,"quantity"   : feed[f]["length"]
+      ,"entries"    : markup
+      ,"feedUrl"    : feed[f]["feedUrl"]
+      ,"title"      : feed[f]["title"]
+      ,"author"     : feed[f]["author"]
+      ,"description": feed[f]["description"]
     };
   }//function viewFeed
 
 
-  var view = function(){
+  var view = function() {
   //This function builds the view for all feeds, synchronously.
     debug("» View");
-    $.each(TAMU.feed.url,function(feedIndex,feedUrl){
-      TAMU.feedapp.element.stage.append(t(feedTemplate,viewFeed(feedIndex)));
+    $.each(feeduri,function(f,feeduri){
+        element.stage.append(t(feedTemplate,viewFeed(f)));
     });
   }//function view
 
@@ -290,119 +299,142 @@ New:
   // ===============
 
   var modelEntry = function(index,entry) {
-  //This function models one entry. Presumes entry.content.
+  //This function models one entry.
     var isoAttr;
+    var r = {
+      publishedDate: entry.publishedDate || null
+      ,title : trunc(entry.title)  || ""
+      ,link  : trunc(entry.link)   || ""
+      ,author: trunc(entry.author) || ""
+    }//$.extend(entries[feedIndex][index],feed.entries[index]); 
+    if (!entry.content) return r;
     //content: transform all REL → CLASS
-    entry.content = entry.content.replace(/\brel="/ig,' class="');
-    entry.description = viewProperty("description",entry.content);
+    r.content = entry.content.replace(/\brel="/ig,' class="');
+    r.description = viewProperty("description",r.content);
     //--------------------------DATE/TIME--------------------------
-    var dtstartEle  = $(entry.description).find(".dtstart");
+    var dtstartEle  = $(r.description).find(".dtstart");
     if (dtstartEle) {
-      entry.dtstart = dtstartEle.text();
+      r.dtstart = dtstartEle.text();
       if ("ABBR"===dtstartEle.prop('tagName')) isoAttr = "title";
       else isoAttr = "data-iso8601";
-      entry.dtstartISO8601 = dtstartEle.attr(isoAttr);
-      entry.start = new Date(entry.publishedDate);
-      //entry.start = new Date(entry.dtstartISO8601); //Mobile Webkit Prob
-      var dtendEle = $(entry.description).find(".dtend");
+      r.dtstartISO8601 = dtstartEle.attr(isoAttr);
+      r.start = new Date(r.publishedDate);
+      //r.start = new Date(r.dtstartISO8601); //Mobile Webkit Prob
+      var dtendEle = $(r.description).find(".dtend");
       if (dtendEle) {
         if ("ABBR"===dtendEle.prop('tagName')) isoAttr = "title";
         else isoAttr = "data-iso8601";
-        entry.dtend = dtendEle.text();
-        entry.dtendISO8601 = dtendEle.attr(isoAttr);
-        //entry.end = new Date(entry.dtendISO8601); //Mobile Webkit Prob
-        //if ("Invalid Date"===entry.end.toLocaleDateString()) delete entry.end;
+        r.dtend = dtendEle.text();
+        r.dtendISO8601 = dtendEle.attr(isoAttr);
+        //r.end = new Date(r.dtendISO8601); //Mobile Webkit Prob
+        //if ("Invalid Date"===r.end.toLocaleDateString()) delete r.end;
       }//dtendEle
     }//if dtstartEle
     //--------------------------DATE/TIME--------------------------
-    //entry.pubDate = new Date(entry.publishedDate);
-    entry.location = $(entry.description).find(".location").text();
-    if (entry.location) { // Event // Event // Event 
-      entry.event = true;
-      entry.historical = (
-        entry.start.getTime() < +Date.now() + millisecondsBeforeHistorical
-      );//historical
-      entry.summary  = trunc($(entry.description).find(".summary").text())
+    r.pubDate = new Date(r.publishedDate);
+    r.location = $(r.description).find(".location").text();
+    if (r.location) { // Event // Event // Event 
+      r.type = "event";
+      r.historical = (
+        r.start.getTime() < +Date.now() + millisecondsBeforeHistorical
+      );
+      r.summary = trunc($(r.description).find(".summary").text())
     } else { // Non-Event // Non-Event // Non-Event
-      entry.summary  = trunc(entry.content);
+      r.type = ""; 
+      r.summary = trunc(entry.content);
     }
-    entry.subtitle = $(entry.description).find(".subtitle").text();
-    entry.description = viewProperty("description",entry.content); //hidden
+    r.subtitle = $(r.description).find(".subtitle").text();
+    r.description = viewProperty("description",r.content); //css hides
+    return r;
   }//function modelEntry
 
 
-  var modelFeed = function(feedIndex,feed){
+  var modelFeed = function(f,feed){
   //This function builds the model for a feed.
-    debug("» Model");
-    $.extend(TAMU.feed.metadata[feedIndex],feed);
-    //Enhance: Is it necessary to deep clone the google result.feed???
-    //TAMU.feed.metadata[feedIndex]["quantity"] = TAMU.feed.metadata[feedIndex]["entries"].length;
-    debug("Feed "+(feedIndex+1)+"'s quantity of entries fetched is "+
-        TAMU.feed.metadata[feedIndex]["entries"].length
-    );
-    $.each(TAMU.feed.metadata[feedIndex]["entries"],
-        function(index,entry){
-          if (entry.content) modelEntry(index,entry);
-        }//function
-    );//each entry
+    debug("» modelFeed #"+(f+1));
+    debug("# entries = "+feed.entries.length);
+    var type = ""; //initialize the feed's type
+    entries[f] = [];
+    $.each(feed.entries, function(e,entry){
+        entries[f][e] = modelEntry(e,entry);
+        if (entries[f][e].type) type = entries[f][e].type;
+        //if entry has a type e.g. "event", then feed is typed.
+    });//each feed entry
+    if ("reverse"===sortorder) {
+      if (type) entries[f].sort(byReversePubDate);
+      else entries[f].sort(byPubDate)
+    } else {
+      if (type) entries[f].sort(byPubDate);
+      else entries[f].sort(byReversePubDate);
+    }
+    return {
+      "feedUrl"     : feed.feedUrl
+      ,"title"      : feed.title
+      ,"author"     : feed.author
+      ,"description": feed.description
+      ,"type"       : type
+      ,"length"     : entries[f].length
+    };
   }//function modelFeed
 
 
   // Controller Functions
   // ====================
 
-  var controllerFeed = function(result,feedIndex) {
+  var controllerFeed = function(result,f) {
   //This function is the asynchronously-invoked controller for a feed.
-    debug("» Feed Controller");
-    if ("undefined"===typeof TAMU.feed.metadata) TAMU.feed.metadata = {};
-    TAMU.feed.metadata[feedIndex] = {};
-    if (result.error) return TAMU.feedapp.element.stage.append(
+    debug("» controllerFeed #"+(f+1));
+    if (result.error) return element.stage.append(
         t(feedTemplate,{
           "feedUrl" : "" 
           ,"entries": ""
-          ,"feedIndex"  : "error"+result.error.code
+          ,"feedIndex"  :  "error"+result.error.code
           ,"title"      : "Error "+result.error.code+": "+result.error.message
           ,"description": "Error "+result.error.code+": "+result.error.message
         })//t
     );//return error
-    modelFeed(feedIndex,result.feed);
-    if ("netspeed"===TAMU.feed.sort) {
-      TAMU.feedapp.element.stage.append(t(feedTemplate,viewFeed(feedIndex)));
-      delete TAMU.feed.metadata[feedIndex]; //forget the feed's metadata
-    } else if (!--TAMU.feedapp.countdown) {
+    feed[f] = modelFeed(f,result.feed);
+    if (async) {
+      element.stage.append(t(feedTemplate,viewFeed(f)));
+      delete entries[f]; //forget the feed's metadata
+    } else if (!--feed.countdown) {
       view();
-      delete TAMU.feed.metadata; //forget all feeds metadata
+      entries = null; //forget all feeds metadata
     }//else if
   }//function controllerFeed
 
 
-  var controller = TAMU.feedapp.controller = function() {
+  var controller = function() {
   //This function is the asynchronously-invoked main controller.
     debug("» Controller");
-    if ("object"!==typeof TAMU.feed.url) TAMU.feed.url = [TAMU.feed.url];
-    TAMU.feed.quantity = TAMU.feedapp.countdown = TAMU.feed.url.length;
-    debug("--How many feeds? "+TAMU.feed.quantity);
-    TAMU.feedapp.element.stage.attr("data-feeds",TAMU.feed.quantity);
-    TAMU.feedapp.element.stage.html(""); //Clear out static content from server.
-    $.each(TAMU.feed.url,function(feedIndex,feedUrl){
-      var googfeed = new google.feeds.Feed(feedUrl);
+    feed.quantity = feed.countdown = feeduri.length;
+    debug("--How many feeds? "+feed.quantity);
+    element.stage.attr("data-feeds",feed.quantity);
+    element.stage.html(""); //Clear out static content from server.
+    $.each(feeduri,function(f,feeduri){
+      var googfeed = new google.feeds.Feed(feeduri);
       googfeed.includeHistoricalEntries();//TEST
-      googfeed.setNumEntries(TAMU.feed.fetchEntries);
-      debug("--Feed #"+(feedIndex+1)+"'s fetchEntires = "+TAMU.feed.fetchEntries);
+      googfeed.setNumEntries(fetchEntries);
+      debug("--Feed #"+(f+1)+"'s fetchEntires = "+fetchEntries);
       googfeed.load( //Asynchronously 
-        function(result){ controllerFeed(result,feedIndex);}
+        function(googresult){ controllerFeed(googresult,f);}
       );
     });//each feed
   }//function controller
 
+  return {
+    VERSION: VERSION
+    ,controller: controller
+    ,element: element
+  }
 
-}).call(this); // IIFE //
+})(this,tamufeed || {}); // IIFE //
 
 // -------------------------------------------------------------------------
 
 $(function() { /* OnDomReady /**/
 
-  if (TAMU.feedapp.element.stage) 
-    google.load("feeds","1",{"callback":TAMU.feedapp.controller});
+  if (tamufeed.element.stage) 
+    google.load("feeds","1",{"callback":tamufeed.controller,"nocss":true});
 
 });
