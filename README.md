@@ -1,6 +1,7 @@
-# TAMU.feed.js
+# tamufeed.js
 
-Please let me know how this software helps you? monty@tamu.edu
+A live demonstration is
+[here](http://cllacdn.tamu.edu/calendar/).
 
 ## License
 
@@ -21,13 +22,16 @@ element on the page.
 
 ## Configuration
 
-These parameters are set in the `TAMU.feed` object.
+These parameters are set in the `tamufeed` object.
 
 * `url` has the feed address(es)
 * `selector.stage` locates the stage element
-* `sort: "netspeed"` puts the script in turbo, asynchronous mode: it will print feeds in the order that they speed across the net.
-* `fetchEntries:` number of entries to fetch from Google, for each feed
-* `wantEntries:` number of (non-historical events or) entries wanted to show
+* `sort` sorts entries
+    * `"forward"` sorts events ascending and non-events descending
+    * `"reverse"` sorts events descending and non-events ascending time
+* `async: true` puts the script in asynchronous mode for printing feeds
+* `fetchEntries` number of entries to fetch from Google, for each feed
+* `wantEntries` number of (non-historical events or) entries wanted to show
 
 ## Developers
 
@@ -45,47 +49,51 @@ http://code.google.com/p/unl-event-publisher/
 - Localize time for the user agent's TimeZone.
 - Event dtstart & dtend strings are allowed to pass through presuming correct formatting, so timeTemplate is not utilized.
 
-## Integration How To 
+## Integration
+
+### Traditional (synchronous load)
 
 To integrate this software onto a web page, you basically need to three things
 in your HTML.
 
-1. The settings script block, which specifies your element selector & feed.
+1. The configuration script block, which configures your element selector & feed.
 2. The prerequisite jQuery & Google JS API script tags, and this script.
 3. The text/html script elements which are the output templates.
 
 Here is an example of #1:
 
     <script charset="utf-8">
-        //Settings
-        if ("undefined"===typeof TAMU) TAMU = {};
-        TAMU.feed = {
-            "selector": "#tamufeeds"
+        //Configuration
+        tamufeed = {
+            "selector": "#tamufeed"
             ,"fetchEntries": 10
-            ,"wantEntries" :  6
+            ,"wantEntries" :  8
             ,"url" : [
-               "http://calendar.tamu.edu/liberalarts/upcoming/?format=rss"
-              ,"http://calendar.tamu.edu/philosophy/upcoming/?format=rss"
-              ,"http://calendar.tamu.edu/communication/upcoming/?format=rss"
-              ,"http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
+              "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
+              ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
             ]
-        }//TAMU.feed
+        }//tamufeed
     </script>
 
 Here is an example of #2:
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="https://www.google.com/jsapi"></script>
-    <script src="/path/on/your/server/to/TAMU.feed.js" charset="utf-8"></script>
+    <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #3, the templates can be copied verbatim out of the markup.html sample.
+
+### Asynchronous Load
+
+[Require.js](http://requirejs.org/) AMD loader support is only experimental
+(c.f. `amd.html`) but it will be released in the next version.
 
 ## Markup
 
 The one change you must make to your HTML is to have an element where you want
 the app to insert its content e.g.
 
-    <div id="tamufeeds"></div>
+    <div id="tamufeed"></div>
 
 ## Styling
 

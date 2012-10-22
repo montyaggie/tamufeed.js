@@ -8,26 +8,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.7.2/build/cssreset/cssreset-min.css">
   <link rel="stylesheet" type="text/css" href="./styles.css" charset="utf-8"/>
-  <title>Demo of TAMU.feed.js</title>
+
+  <title>demonstration</title>
+  <meta name="description" content="Non-AMD demonstration of tamufeed.js">
+  <meta name="author" content="Monty Dickerson">
+
   <script charset="utf-8">//Settings
-    if ("undefined"===typeof TAMU) TAMU = {};
-    TAMU.feed = {
-      "selector": "#tamufeeds"
-      ,"fetchEntries": 14
-      ,"wantEntries" :  7
-      ,"url": [
-         "http://cal.tamu.edu/perf/upcoming/?format=rss"
-        ,"http://cal.tamu.edu/film/upcoming/?format=rss"
-        ,"http://cal.tamu.edu/liberalarts/upcoming/?format=rss"
-        ,"http://academyarts.tamu.edu/feed/"
-      ]
+    var tamufeed = {
+      "selector": "#tamufeed"
+      ,"fetchEntries": 10
+      ,"wantEntries" :  9
+      ,"sort": "forward"
+      ,"url": "http://cal.tamu.edu/liberalarts/upcoming/?format=rss"
     }
   </script>
 </head>
 <body>
 
-<div id="tamufeeds">
-    <img src="//cllacdn.tamu.edu/images/ajaxspinner/deep-bo.com-spinner.gif"
+<div id="tamufeed">
+    <img src="http://cllacdn.tamu.edu/images/ajaxspinner/deep-bo.com-spinner.gif"
       alt="loading..." class="ajaxspinner" />
 </div>
 
@@ -56,8 +55,14 @@
   >
   <h2 class="feed-title">{{title}}</h2>
   <div class="feed-description">{{description}}</div>
+  <div class="toc">{{entriesToc}}</div>
   {{entries}}
 </div>
+</script>
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+<script type="text/html" id="responseTemplate" charset="utf-8">
+<div class="toc">{{feedsToc}}</div>
+{{feeds}}
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="entryTemplate" charset="utf-8" 
@@ -97,14 +102,14 @@
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" charset="utf-8"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" charset="utf-8"></script>
 <script src="https://www.google.com/jsapi" charset="utf-8">
 // Add a get parameter "key" if need to specify TAMU's API key.
 </script>
-<script src="TAMU.feed.js" charset="utf-8"></script>
+<script src="./tamufeed.js" charset="utf-8"></script>
 
-<script>
-if ("undefined"===typeof TAMU.feedapp.VERSION) alert("TAMU.feed.js not loaded.");
+<script>//Check Point
+if ("undefined"===typeof tamufeed.VERSION) alert("tamufeed.js not loaded.");
 </script>
 
 </body>
