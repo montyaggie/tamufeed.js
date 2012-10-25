@@ -1,9 +1,19 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-tamufeed.js
+tamufeed: 
+  { exports: "tamufeed", deps: ["google", "jquery" ,"underscore"] }
 
 New:
-  + Module pattern conformity
-  + Sort entries by pubDate, forward or reverse
+  + `xssless()` applied to all untrusted HTML strings before sent to the view
+  + `truncatedStringMaxLength` number can be passed in from the config
+  + `minutesBeforeHistorical` number can be passed in by the config
+  + `debugging` string can be set in the configuration
+
+Todo:
+  - XSS prevention (security concern)
+    - Escape CSS out of strings inserted in HTML class attributes 
+    - Escape JS out of strings inserted in HTML data attributes
+  - Lessen & eliminate the dependency on jQuery
+  - Increase dependency on Underscore.js functions
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 ;var tamufeed = (function(win,config) {
@@ -11,7 +21,7 @@ New:
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.1';
+  var VERSION = '0.1.2';
 
   // Configuration
   var debugging = config.debugging || false;
@@ -22,16 +32,28 @@ New:
   var sortorder = config.sort || "";
   var fetchEntries = config.fetchEntries || 4;
   var wantEntries  = config.wantEntries  || 99;
-  var truncatedStringMaxLength = config.truncatedStringMaxLength || 300; //chars
-  var millisecondsBeforeHistorical = config.millisecondsBeforeHistorical || 1800000;
-      // 30min slack after dtstart // 60min slack after dtstart
+  var truncatedStringMaxLength = config.truncatedStringMaxLength 
+    || 300; //characters
+  var millisecondsBeforeHistorical = config.minutesBeforeHistorical * 60000
+    || 1800000; //=30 minutes slack after dtstart
   var selector = config.selector || {};
   if ("string"===typeof selector) selector = {"stage":selector};
   var feeduri = config.url;
   if ("string"===typeof feeduri) feeduri = [feeduri];
 
-  // Shims
+
+  // Polyfills backporting some ECMA262-5
+  // ------------------------------------
+
+  // Date.now
   win.Date.valueOf = win.Date.now = win.Date.now || function() { return +new Date; };
+  // Array.forEach
+  if (!('forEach' in Array.prototype)) Array.prototype.forEach =
+    function(/* function */action, /* object */that) {
+      for (var i=0, n=this.length; i<n; i++)
+        if (i in this) action.call(that, this[i], i, this);
+    }//function
+  // console
   if ("undefined"===typeof console)
     console = (function(){ z = function(){}; return { 
       log:z ,trace:z ,count:z ,dir:z ,dirxml:z 
@@ -172,6 +194,19 @@ New:
   }//function
 
 
+  // XSS prevention function
+  // -----------------------
+  var xssless = function(str){
+  //This crude+crass function removes dangerous XSS tags from a string.
+    str = str.replace(/<\/?script/ig,'&lt;script');
+    str = str.replace(/<\/?style/ig,'&lt;style');
+    str = str.replace(/<\/?frameset/ig,'&lt;frameset');
+    str = str.replace(/<\/?iframe/ig,'&lt;iframe');
+    str = str.replace(/<\/?embed/ig,'&lt;embed');
+    str = str.replace(/<\/?object/ig,'&lt;object');
+    return str;
+  }//function
+
   // Comparison functions
   // ---------------------
 
@@ -255,28 +290,24 @@ New:
   }//function viewEntry
 
 
-  var viewFeed = function(f){
+  var viewFeed = function(f) {
   //This function builds the view for a feed.
     debug("» viewFeed #"+(f+1));
-    var markup = '';
-    var novel = 0;
+    var e=0, markup = '', novel = 0;
     var feedAttributes = ["odd ","even"][f%2];
-    if (feed[f]["length"]) {
-      $.each(entries[f],
-        function(index,entry){
-          var ve = viewEntry(index,entry,feed[f]["length"]);
-          if ("undefined"===typeof ve.historical) novel++;
-          if (novel>wantEntries) ve.attributes += " over";
-          markup += t(entryTemplate,ve);
-        }//function
-      );
-    } else markup = '<p class="noentry">Nothing to report.</p>';
+    if (!feed[f]["quantity"]) markup = '<p class="noentry">Nothing to report.</p>';
+    else for (e; e < feed[f]["quantity"]; e++) {
+      var ve = viewEntry(e,entries[f][e],feed[f]["quantity"]);
+      if ("undefined"===typeof ve.historical) novel++;
+      if (novel>wantEntries) ve.attributes += " over";
+      markup += t(entryTemplate,ve);
+    }//else for
     return {  
       "feedIndex"   : "feed"+(f+1)
       ,"attributes" : feedAttributes
       ,"index"      : f+1
       ,"feedQuantity": feed.quantity
-      ,"quantity"   : feed[f]["length"]
+      ,"quantity"   : feed[f]["quantity"]
       ,"entries"    : markup
       ,"feedUrl"    : feed[f]["feedUrl"]
       ,"title"      : feed[f]["title"]
@@ -302,14 +333,14 @@ New:
   //This function models one entry.
     var isoAttr;
     var r = {
-      publishedDate: entry.publishedDate || null
-      ,title : trunc(entry.title)  || ""
-      ,link  : trunc(entry.link)   || ""
-      ,author: trunc(entry.author) || ""
+      publishedDate: entry.publishedDate   || 0
+      ,title : xssless(trunc(entry.title)) || ""
+      ,link  : xssless(trunc(entry.link))  || ""
+      ,author: xssless(trunc(entry.author))|| ""
     }//$.extend(entries[feedIndex][index],feed.entries[index]); 
     if (!entry.content) return r;
     //content: transform all REL → CLASS
-    r.content = entry.content.replace(/\brel="/ig,' class="');
+    r.content = xssless(entry.content.replace(/\brel="/ig,' class="'));
     r.description = viewProperty("description",r.content);
     //--------------------------DATE/TIME--------------------------
     var dtstartEle  = $(r.description).find(".dtstart");
@@ -332,7 +363,7 @@ New:
     }//if dtstartEle
     //--------------------------DATE/TIME--------------------------
     r.pubDate = new Date(r.publishedDate);
-    r.location = $(r.description).find(".location").text();
+    r.location = xssless(trunc($(r.description).find(".location").text()));
     if (r.location) { // Event // Event // Event 
       r.type = "event";
       r.historical = (
@@ -341,9 +372,9 @@ New:
       r.summary = trunc($(r.description).find(".summary").text())
     } else { // Non-Event // Non-Event // Non-Event
       r.type = ""; 
-      r.summary = trunc(entry.content);
+      r.summary = xssless(trunc(entry.content));
     }
-    r.subtitle = $(r.description).find(".subtitle").text();
+    r.subtitle = xssless(trunc($(r.description).find(".subtitle").text()));
     r.description = viewProperty("description",r.content); //css hides
     return r;
   }//function modelEntry
@@ -354,26 +385,26 @@ New:
     debug("» modelFeed #"+(f+1));
     debug("# entries = "+feed.entries.length);
     var type = ""; //initialize the feed's type
+    var e=0;
     entries[f] = [];
-    $.each(feed.entries, function(e,entry){
-        entries[f][e] = modelEntry(e,entry);
-        if (entries[f][e].type) type = entries[f][e].type;
-        //if entry has a type e.g. "event", then feed is typed.
-    });//each feed entry
+    for (e; e < feed.entries.length; e++) {
+      entries[f][e] = modelEntry(e,feed.entries[e]);    //model entry
+      entries[f][e].type && (type = entries[f][e].type);//feed inherits type
+    }//for entries
     if ("reverse"===sortorder) {
       if (type) entries[f].sort(byReversePubDate);
       else entries[f].sort(byPubDate)
-    } else {
+    } else { //presumed: every other sortorder is default i.e. "forward"
       if (type) entries[f].sort(byPubDate);
       else entries[f].sort(byReversePubDate);
     }
     return {
-      "feedUrl"     : feed.feedUrl
-      ,"title"      : feed.title
-      ,"author"     : feed.author
-      ,"description": feed.description
+      "feedUrl"     : xssless(trunc(feed.feedUrl))
+      ,"title"      : xssless(trunc(feed.title))
+      ,"author"     : xssless(trunc(feed.author))
+      ,"description": xssless(trunc(feed.description))
       ,"type"       : type
-      ,"length"     : entries[f].length
+      ,"quantity"   : entries[f].length
     };
   }//function modelFeed
 
@@ -409,7 +440,7 @@ New:
     debug("» Controller");
     feed.quantity = feed.countdown = feeduri.length;
     debug("--How many feeds? "+feed.quantity);
-    element.stage.attr("data-feeds",feed.quantity);
+    element.stage.attr("data-children",feed.quantity);
     element.stage.html(""); //Clear out static content from server.
     $.each(feeduri,function(f,feeduri){
       var googfeed = new google.feeds.Feed(feeduri);
@@ -430,6 +461,11 @@ New:
 
 })(this,tamufeed || {}); // IIFE //
 
+// -------------------------------------------------------------------------
+/* Register as a named module with AMD. 
+  if (typeof define === 'function' && define.amd)
+    define(["google", "jquery", "Backbone"], function(){ return {}; });
+/**/
 // -------------------------------------------------------------------------
 
 $(function() { /* OnDomReady /**/
