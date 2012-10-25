@@ -1,24 +1,32 @@
 # tamufeed.js
 
-A live demonstration is
-[here](http://cllacdn.tamu.edu/calendar/).
+Welcome to this github open source repo; we're glad you're here.
+Follow to receive news of changes or star to express your interest.
+
+We support your participation in the source code and
+your issues asking questions are welcomed.
+
+* [synchronous demo](http://cllacdn.tamu.edu/calendar/sync.php)
+* [asynchronous demo](http://cllacdn.tamu.edu/calendar/)
+* [experimental kiosk demo](http://cllacdn.tamu.edu/calendar/kiosk.php)
 
 ## License
 
-See LICENSE.md for licensing information.
-This software is Copyright (c) 2012, Texas A&M University.
+This code is licensed under a
+[BSD 2-clause license](http://opensource.org/licenses/BSD-2-Clause);
+please read LICENSE.md for the details.
+This software is Copyright © 2012, Texas A&M University.
 
 ## Description
 
 This browser-side software retrieves news feeds from Google, recognizing and
 using [hCalendar](http://microformats.org/wiki/hcalendar) tagged elements
-in entry content (if found), and then prints the information into a stage 
-element on the page.
+in any feed entry's content, if found: and then outputs the information into a stage element on the page.
 
 ## Dependencies
 
-1. Google Feed API will continue w/o incompatible changes until 4/20/15.
-2. jQuery 1.x (a recent version)
+1. Google Feed API will continue w/o incompatible changes until 4/20 in 2015.
+2. [jQuery](http://jquery.com/) or [zepto.js](http://zeptoJS.com/).
 
 ## Configuration
 
@@ -32,6 +40,9 @@ These parameters are set in the `tamufeed` object.
 * `async: true` puts the script in asynchronous mode for printing feeds
 * `fetchEntries` number of entries to fetch from Google, for each feed
 * `wantEntries` number of (non-historical events or) entries wanted to show
+* `truncatedStringMaxLength` sets number of characters (default 300)
+* `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
+* `debugging` turns on the F12 console debug messages
 
 ## Developers
 
@@ -40,18 +51,9 @@ These parameters are set in the `tamufeed` object.
 [UNL Event Publisher](http://events.unl.edu/) documented at
 http://code.google.com/p/unl-event-publisher/
 
-## Bugs
-- "All day" time of events are not handled correctly
-- googfeed.setNumEntries() never fetches more than 10 entries per feed: why?
-
-## Not yet implemented
-- Categories as tags on entries
-- Localize time for the user agent's TimeZone.
-- Event dtstart & dtend strings are allowed to pass through presuming correct formatting, so timeTemplate is not utilized.
-
 ## Integration
 
-### Traditional (synchronous load)
+### Synchronously loading
 
 To integrate this software onto a web page, you basically need to three things
 in your HTML.
@@ -83,21 +85,18 @@ Here is an example of #2:
 
 For #3, the templates can be copied verbatim out of the markup.html sample.
 
-### Asynchronous Load
+### Asynchronously loading
 
-[Require.js](http://requirejs.org/) AMD loader support is only experimental
-(c.f. `amd.html`) but it will be released in the next version.
+See file `amd.html` for a [require.js](http://requirejs.org/) way.
 
 ## Markup
 
-The one change you must make to your HTML is to have an element where you want
-the app to insert its content e.g.
-
-    <div id="tamufeed"></div>
+The one thing you must add to your HTML is the element where you want tamufeed
+to insert its content into, e.g. `<div id="tamufeed"></div>`.
 
 ## Styling
 
-Now, you'll want to write some CSS styles to govern the appearance of your
+You'll want to write some CSS styles to govern the appearance of your
 feed on your page. Feel free to copy liberally from the styles.css, if they
 help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
