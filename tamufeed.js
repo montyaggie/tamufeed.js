@@ -9,7 +9,7 @@ tamufeed:
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.2';
+  var VERSION = '0.1.3';
 
   // Configuration
   var debugging = config.debugging || false;
@@ -29,6 +29,7 @@ tamufeed:
   var feeduri = config.url;
   if ("string"===typeof feeduri) feeduri = [feeduri];
 
+  var overWantedClass = "over";
 
   // Polyfills backporting some ECMA262-5
   // ------------------------------------
@@ -283,13 +284,13 @@ tamufeed:
   var viewFeed = function(f) {
   //This function builds the view for a feed.
     debug("» viewFeed #"+(f+1));
-    var e=0, markup = '', novel = 0;
+    var e=0, markup = '', novel=0;
     var feedAttributes = ["odd ","even"][f%2];
     if (!feed[f]["quantity"]) markup = '<p class="noentry">Nothing to report.</p>';
     else for (e; e < feed[f]["quantity"]; e++) {
       var ve = viewEntry(e,entries[f][e],feed[f]["quantity"]);
-      if ("undefined"===typeof ve.historical) novel++;
-      if (novel>wantEntries) ve.attributes += " over";
+      if (ve.attributes.indexOf("historical")<1) novel++;
+      if (novel>wantEntries) ve.attributes += " "+overWantedClass;
       markup += t(entryTemplate,ve);
     }//else for
     return {  
@@ -356,9 +357,8 @@ tamufeed:
     r.location = xsshtml(trunc($(r.description).find(".location").text()));
     if (r.location) { // Event // Event // Event 
       r.type = "event";
-      r.historical = (
-        r.start.getTime() < +Date.now() + millisecondsBeforeHistorical
-      );
+      r.historical = 
+        r.start.getTime() < +Date.now() + millisecondsBeforeHistorical;
       r.summary = trunc($(r.description).find(".summary").text())
     } else { // Non-Event // Non-Event // Non-Event
       r.type = ""; 
