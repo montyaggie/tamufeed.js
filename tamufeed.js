@@ -2,18 +2,6 @@
 tamufeed: 
   { exports: "tamufeed", deps: ["google", "jquery" ,"underscore"] }
 
-New:
-  + `xssless()` applied to all untrusted HTML strings before sent to the view
-  + `truncatedStringMaxLength` number can be passed in from the config
-  + `minutesBeforeHistorical` number can be passed in by the config
-  + `debugging` string can be set in the configuration
-
-Todo:
-  - XSS prevention (security concern)
-    - Escape CSS out of strings inserted in HTML class attributes 
-    - Escape JS out of strings inserted in HTML data attributes
-  - Lessen & eliminate the dependency on jQuery
-  - Increase dependency on Underscore.js functions
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 ;var tamufeed = (function(win,config) {
@@ -101,16 +89,18 @@ Todo:
 
   // Fallback URL's
   if (!feeduri) feeduri = [
-     "http://cal.tamu.edu/liberalarts/upcoming/?format=rss"
+    "http://codemaroon.tamu.edu/feed.xml"
+    ,"http://feeds.feedburner.com/TAMUTrafficConstruction?format=xml"
+/**
     ,"http://liberalarts.tamu.edu/feeds/collegenews.rss"
+    ,"http://academyarts.tamu.edu/feed/"
     ,"http://gdata.youtube.com/feeds/api/users/TAMUliberalarts/uploads"
     ,"http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
-    ,"http://cal.tamu.edu/philosophy/upcoming/?format=rss"
     ,"http://cal.tamu.edu/perf/upcoming/?format=rss"
     ,"http://cal.tamu.edu/internationalstudies/upcoming/?format=rss"
     ,"http://calendar.tamu.edu/?calendar_id=73&upcoming&format=rss"  //Stark
     ,"http://calendar.tamu.edu/?calendar_id=103&upcoming&format=rss" //Forsyth
-    ,"http://academyarts.tamu.edu/feed/"
+/**/
   ];
 
   // Fallback Templates
@@ -196,7 +186,7 @@ Todo:
 
   // XSS prevention function
   // -----------------------
-  var xssless = function(str){
+  var xsshtml = function(str){
   //This crude+crass function removes dangerous XSS tags from a string.
     str = str.replace(/<\/?script/ig,'&lt;script');
     str = str.replace(/<\/?style/ig,'&lt;style');
@@ -334,13 +324,13 @@ Todo:
     var isoAttr;
     var r = {
       publishedDate: entry.publishedDate   || 0
-      ,title : xssless(trunc(entry.title)) || ""
-      ,link  : xssless(trunc(entry.link))  || ""
-      ,author: xssless(trunc(entry.author))|| ""
+      ,title : xsshtml(trunc(entry.title)) || ""
+      ,link  : xsshtml(trunc(entry.link))  || ""
+      ,author: xsshtml(trunc(entry.author))|| ""
     }//$.extend(entries[feedIndex][index],feed.entries[index]); 
     if (!entry.content) return r;
     //content: transform all REL → CLASS
-    r.content = xssless(entry.content.replace(/\brel="/ig,' class="'));
+    r.content = xsshtml(entry.content.replace(/\brel="/ig,' class="'));
     r.description = viewProperty("description",r.content);
     //--------------------------DATE/TIME--------------------------
     var dtstartEle  = $(r.description).find(".dtstart");
@@ -363,7 +353,7 @@ Todo:
     }//if dtstartEle
     //--------------------------DATE/TIME--------------------------
     r.pubDate = new Date(r.publishedDate);
-    r.location = xssless(trunc($(r.description).find(".location").text()));
+    r.location = xsshtml(trunc($(r.description).find(".location").text()));
     if (r.location) { // Event // Event // Event 
       r.type = "event";
       r.historical = (
@@ -372,9 +362,9 @@ Todo:
       r.summary = trunc($(r.description).find(".summary").text())
     } else { // Non-Event // Non-Event // Non-Event
       r.type = ""; 
-      r.summary = xssless(trunc(entry.content));
+      r.summary = xsshtml(trunc(entry.content));
     }
-    r.subtitle = xssless(trunc($(r.description).find(".subtitle").text()));
+    r.subtitle = xsshtml(trunc($(r.description).find(".subtitle").text()));
     r.description = viewProperty("description",r.content); //css hides
     return r;
   }//function modelEntry
@@ -399,10 +389,10 @@ Todo:
       else entries[f].sort(byReversePubDate);
     }
     return {
-      "feedUrl"     : xssless(trunc(feed.feedUrl))
-      ,"title"      : xssless(trunc(feed.title))
-      ,"author"     : xssless(trunc(feed.author))
-      ,"description": xssless(trunc(feed.description))
+      "feedUrl"     : xsshtml(trunc(feed.feedUrl))
+      ,"title"      : xsshtml(trunc(feed.title))
+      ,"author"     : xsshtml(trunc(feed.author))
+      ,"description": xsshtml(trunc(feed.description))
       ,"type"       : type
       ,"quantity"   : entries[f].length
     };
