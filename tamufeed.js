@@ -286,8 +286,11 @@ tamufeed:
     debug("» viewFeed #"+(f+1));
     var e=0, markup = '', novel=0;
     var feedAttributes = ["odd ","even"][f%2];
-    if (!feed[f]["quantity"]) markup = '<p class="noentry">Nothing to report.</p>';
-    else for (e; e < feed[f]["quantity"]; e++) {
+    var quantity = feed[f]["quantity"];
+    if (!quantity) {
+      markup = '<p class="noentry">Nothing to report.</p>';
+      feedAttributes += " empty";
+    } else for (e; e < feed[f]["quantity"]; e++) {
       var ve = viewEntry(e,entries[f][e],feed[f]["quantity"]);
       if (ve.attributes.indexOf("historical")<1) novel++;
       if (novel>wantEntries) ve.attributes += " "+overWantedClass;
@@ -298,7 +301,7 @@ tamufeed:
       ,"attributes" : feedAttributes
       ,"index"      : f+1
       ,"feedQuantity": feed.quantity
-      ,"quantity"   : feed[f]["quantity"]
+      ,"quantity"   : quantity
       ,"entries"    : markup
       ,"feedUrl"    : feed[f]["feedUrl"]
       ,"title"      : feed[f]["title"]
@@ -333,6 +336,9 @@ tamufeed:
     //content: transform all REL → CLASS
     r.content = xsshtml(entry.content.replace(/\brel="/ig,' class="'));
     r.description = viewProperty("description",r.content);
+    //---------------------------IMAGES----------------------------
+    var images = $(r.description).find("img");
+    //...
     //--------------------------DATE/TIME--------------------------
     var dtstartEle  = $(r.description).find(".dtstart");
     if (dtstartEle) {
@@ -374,10 +380,11 @@ tamufeed:
   //This function builds the model for a feed.
     debug("» modelFeed #"+(f+1));
     debug("# entries = "+feed.entries.length);
-    var type = ""; //initialize the feed's type
+    var type=""; //initialize the feed's type
     var e=0;
+    var quantity = feed.entries.length;
     entries[f] = [];
-    for (e; e < feed.entries.length; e++) {
+    for (e; e < quantity; e++) {
       entries[f][e] = modelEntry(e,feed.entries[e]);    //model entry
       entries[f][e].type && (type = entries[f][e].type);//feed inherits type
     }//for entries
@@ -394,7 +401,7 @@ tamufeed:
       ,"author"     : xsshtml(trunc(feed.author))
       ,"description": xsshtml(trunc(feed.description))
       ,"type"       : type
-      ,"quantity"   : entries[f].length
+      ,"quantity"   : quantity
     };
   }//function modelFeed
 
