@@ -1,25 +1,35 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-tamufeed: 
-  { exports: "tamufeed", deps: ["google", "jquery" ,"underscore"] }
+/* * * * * *
+  tamufeed
+/* * * * * */
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+if (typeof define !== 'function' || !define.amd) var define = 
+  function (id,args,func) { 
+    this[id] = func; this[id].apply(this,args); 
+  }//define non-AMD contingency
 
-;var tamufeed = (function(win,config) {
+define('tamufeed', ['jquery','google'], function($, google) {
+/*****************************************************************************/
 
   // Initial Setup
   // -------------
   "use strict";
   var VERSION = '0.1.3';
 
+  // Object Data
+  // -------------
+  var service;            //saves the link to google.feeds
+  var name = "tamufeed";  //each instantiation should have a unique name
+
   // Configuration
-  var debugging = config.debugging || false;
-  var feed    	= config.feed || [];
-  var entries 	= config.entries || [];
-  var element 	= config.element || {};
-  var async 		= config.async || false;
-  var sortorder = config.sort || "";
-  var fetchEntries = config.fetchEntries || 4;
-  var wantEntries  = config.wantEntries  || 99;
+  var config = tamufeed; //from global namespace
+  var debugging   = config.debugging    || false;
+  var feed    	  = config.feed         || [];
+  var entries 	  = config.entries      || [];
+  var element 	  = config.element      || {};
+  var async 		  = config.async        || false;
+  var sortorder   = config.sort         || "";
+  var fetchEntries= config.fetchEntries || 4;
+  var wantEntries = config.wantEntries  || 99;
   var truncatedStringMaxLength = config.truncatedStringMaxLength 
     || 300; //characters
   var millisecondsBeforeHistorical = config.minutesBeforeHistorical * 60000
@@ -35,7 +45,7 @@ tamufeed:
   // ------------------------------------
 
   // Date.now
-  win.Date.valueOf = win.Date.now = win.Date.now || function() { return +new Date; };
+  Date.valueOf = Date.now = Date.now || function() { return +new Date; };
   // Array.forEach
   if (!('forEach' in Array.prototype)) Array.prototype.forEach =
     function(/* function */action, /* object */that) {
@@ -187,8 +197,26 @@ tamufeed:
 
   // XSS prevention function
   // -----------------------
+
+  var escapeHTML = function (/* String */str) {
+  //This function escapes special characters of meaning in an HTML string.
+    if ("string"!==typeof str || !str) return '';
+    var escapedHtmlChars = {
+      '<': 'lt',
+      '>': 'gt',
+      '"': 'quot',
+      "'": 'apos',
+      '&': 'amp'
+    }//escapedHtmlChars
+    return str.replace(
+      /[&<>"']/g, 
+      function(ch) { return '&'+escapedHtmlChars[ch]+';'; }
+    );
+  }//function
+
   var xsshtml = function(str){
-  //This crude+crass function removes dangerous XSS tags from a string.
+  //This function removes only dangerous XSS tags from an HTML string.
+    if ("string"!==typeof str || !str) return '';
     str = str.replace(/<\/?script/ig,'&lt;script');
     str = str.replace(/<\/?style/ig,'&lt;style');
     str = str.replace(/<\/?frameset/ig,'&lt;frameset');
@@ -328,9 +356,9 @@ tamufeed:
     var isoAttr;
     var r = {
       publishedDate: entry.publishedDate   || 0
-      ,title : xsshtml(trunc(entry.title)) || ""
-      ,link  : xsshtml(trunc(entry.link))  || ""
-      ,author: xsshtml(trunc(entry.author))|| ""
+      ,title : escapeHTML(trunc(entry.title)) || ""
+      ,link  : escapeHTML(trunc(entry.link))  || ""
+      ,author: escapeHTML(trunc(entry.author))|| ""
     }//$.extend(entries[feedIndex][index],feed.entries[index]); 
     if (!entry.content) return r;
     //content: transform all REL → CLASS
@@ -360,7 +388,7 @@ tamufeed:
     }//if dtstartEle
     //--------------------------DATE/TIME--------------------------
     r.pubDate = new Date(r.publishedDate);
-    r.location = xsshtml(trunc($(r.description).find(".location").text()));
+    r.location = escapeHTML(trunc($(r.description).find(".location").text()));
     if (r.location) { // Event // Event // Event 
       r.type = "event";
       r.historical = 
@@ -370,7 +398,7 @@ tamufeed:
       r.type = ""; 
       r.summary = xsshtml(trunc(entry.content));
     }
-    r.subtitle = xsshtml(trunc($(r.description).find(".subtitle").text()));
+    r.subtitle = escapeHTML(trunc($(r.description).find(".subtitle").text()));
     r.description = viewProperty("description",r.content); //css hides
     return r;
   }//function modelEntry
@@ -396,10 +424,10 @@ tamufeed:
       else entries[f].sort(byReversePubDate);
     }
     return {
-      "feedUrl"     : xsshtml(trunc(feed.feedUrl))
-      ,"title"      : xsshtml(trunc(feed.title))
-      ,"author"     : xsshtml(trunc(feed.author))
-      ,"description": xsshtml(trunc(feed.description))
+      "feedUrl"     : escapeHTML(trunc(feed.feedUrl))
+      ,"title"      : escapeHTML(trunc(feed.title))
+      ,"author"     : escapeHTML(trunc(feed.author))
+      ,"description": escapeHTML(trunc(feed.description))
       ,"type"       : type
       ,"quantity"   : quantity
     };
@@ -410,7 +438,8 @@ tamufeed:
   // ====================
 
   var controllerFeed = function(result,f) {
-  //This function is the asynchronously-invoked controller for a feed.
+  //This function controls model/view of one feed; it is called by putFeed.
+  //Enhance: subscribe to the pubsub "/feed/raw"
     debug("» controllerFeed #"+(f+1));
     if (result.error) return element.stage.append(
         t(feedTemplate,{
@@ -433,41 +462,59 @@ tamufeed:
 
 
   var controller = function() {
-  //This function is the asynchronously-invoked main controller.
-    debug("» Controller");
+  //This function controls tamufeed; it is called by putAPI.
+  //Enhance: subscribe to the pubsub "/request"
+    debug("» controller");
     feed.quantity = feed.countdown = feeduri.length;
     debug("--How many feeds? "+feed.quantity);
     element.stage.attr("data-children",feed.quantity);
     element.stage.html(""); //Clear out static content from server.
     $.each(feeduri,function(f,feeduri){
-      var googfeed = new google.feeds.Feed(feeduri);
-      googfeed.includeHistoricalEntries();//TEST
-      googfeed.setNumEntries(fetchEntries);
+      var servfeed = new service.Feed(feeduri); //new google.feeds.Feed(feeduri);
+      servfeed.includeHistoricalEntries();//TEST
+      servfeed.setNumEntries(fetchEntries);
       debug("--Feed #"+(f+1)+"'s fetchEntires = "+fetchEntries);
-      googfeed.load( //Asynchronously 
-        function(googresult){ controllerFeed(googresult,f);}
+      servfeed.load( //Call with Asynchronous Callback
+        function(servresult){ putFeed(servresult,f);}
       );
     });//each feed
   }//function controller
 
+
+  // Network Service Handling Functions
+  // ==================================
+
+  var init = function() {
+  //This function initializes everything. 
+  //Tightly coupled: calls the service loader.
+    debug("» init");
+    if ("undefined"===typeof google) throw "Google API loader failure.";
+    if (element.stage) 
+      google.load("feeds","1",{"callback":putAPI,"nocss":true});
+    else debug("tamufeed.element.stage not found."); //fail silently
+  }//function init
+
+  var putAPI = function() {
+  //This function is asynchronously-called as callback of service API.
+    debug("» putAPI");
+    if ("undefined"===typeof google.feeds) throw "Google Feeds API failure.";
+    service = google.feeds;
+    //Enhance: broadcast the pubsub message name+"/request" here:
+    controller(); //instead of tightly coupled to controller.
+  }//function putAPI
+
+  var putFeed = function(servresult,f) {
+  //This function is asynchronously-called as callback of service API instance.
+    debug("» putFeed");
+    if ("undefined"===typeof servresult) throw "Network API feed failure.";
+    //Enhance: broadcast the pubsub message name+"/feed/raw" here:
+    controllerFeed(servresult,f); //instead of tightly coupled to controllerFeed.
+  }//function putFeed
+
   return {
     VERSION: VERSION
-    ,controller: controller
-    ,element: element
+    ,init  : init
   }
 
-})(this,tamufeed || {}); // IIFE //
-
-// -------------------------------------------------------------------------
-/* Register as a named module with AMD. 
-  if (typeof define === 'function' && define.amd)
-    define(["google", "jquery", "Backbone"], function(){ return {}; });
-/**/
-// -------------------------------------------------------------------------
-
-$(function() { /* OnDomReady /**/
-
-  if (tamufeed.element.stage) 
-    google.load("feeds","1",{"callback":tamufeed.controller,"nocss":true});
-
+/*****************************************************************************/
 });
