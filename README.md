@@ -1,9 +1,9 @@
 # tamufeed.js
 
 This browser-side software is optimized for showing calendar.tamu.edu
-feeds. It initializes service API connection when the DOM is ready, 
-and immediately pulls, models & sorts feeds, putting its view into 
-one element on the page.
+feeds. It initializes service connection when the document object model
+is ready and pulls, models, sorts, and shows feeds on the page (in one
+element only).
 
 Welcome to this github open source repo; we're glad you're here.
 Follow to receive news of changes or star to express your interest?
@@ -21,10 +21,10 @@ and your issues (asking questions, reporting bugs, etc) are welcomed.
 
 This code is licensed under a
 [BSD 2-clause license](http://opensource.org/licenses/BSD-2-Clause);
-please read LICENSE.md for the details.
+please read LICENSE.txt for the details.
 This software is Copyright © 2012, Texas A&M University.
 
-## Event Entry Modelling
+## Event Entry Modeling
 
 We retrieve news feeds from Google, recognizing and using
 [hCalendar](http://microformats.org/wiki/hcalendar) tagged elements
@@ -32,8 +32,15 @@ in any feed entry's content, if found.
 
 ## Dependencies
 
-1. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 in 2015.
-2. [jQuery](http://jquery.com/) or [zepto.js](http://zeptoJS.com/).
+1. [Require.js](http://requirejs.org/) asynchronous JavaScript loader
+2. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 in 2015
+3. [jQuery](http://jquery.com/) or [zepto.js](http://zeptoJS.com/)
+4. Optional: [Normalize.css](http://necolas.github.com/normalize.css/) is the new reset.css
+5. Optional: [Underscore.js](http://underscorejs.org/) utility-belt library
+
+If you want to retrieve more than ten entries per feed, 
+[obtain a Google API key](https://developers.google.com/maps/documentation/javascript/tutorial#api_key)
+and pass it as the `key=` URL get parameter where you load Google's JSAPI script.
 
 ## Configuration
 
@@ -61,11 +68,15 @@ http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
 
 ### Synchronously loading
 
+#### Synchronously loading is under construction; it is not supported yet.
+
 To integrate this software onto a web page (the old fashioned, synchronous way), you basically need to three things in your HTML.
 
 1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
 2. The prerequisite jQuery & Google JS API script tags, and this script. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom.
 3. The text/html script elements, which are the output templates for this script. Put them anywhere *before* this script.
+4. Remove any reliance to resources hosted on *our* demo's
+[server](http://cllacdn.tamu.edu/html/home.html).
 
 Here is an example of #1:
 
@@ -85,22 +96,30 @@ Here is an example of #1:
 Here is an example of #2:
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="https://www.google.com/jsapi"></script>
+    <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #3, the templates can be copied verbatim out of the synchronous.html sample.
 
+For #4, remove all references to any resources hosted on our
+[cllacdn](http://cllacdn.tamu.edu/html/home.html) server
+before deploying your implementation. Do not use our bandwidth.
+Thanks for using **your own web server** for hosting your copy of social media 
+icons, library JavaScript, etc.
+
+
 ### Asynchronously loading
 
 Async JS loading reduces page load time, because it lets scripts load simultaneously, instead of in blocking, queued way. This boosts web performance.
-(Why care?
+[Here's](http://css-tricks.com/thinking-async/)
+[why](http://requirejs.org/docs/why.html) async is best practice
+(c.f.
 [@souders](http://twitter.com/souders),
 [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html),
-[blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/).)
+[blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/)).
 
 See `async.html` for the demo using [require.js](http://requirejs.org/)
-integration. [Here's](http://css-tricks.com/thinking-async/)
-[why](http://requirejs.org/docs/why.html) async is best practice.
+integration. 
 
 ## Markup
 
@@ -114,14 +133,6 @@ feed on your page. Feel free to copy liberally from the styles.css, if they
 help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
-
-### IMPORTANT
-
-Please  remove all references to any resources hosted on our
-[cllacdn](http://cllacdn.tamu.edu/html/home.html) server
-before deploying your implementation.
-Thanks for using *your own web server* for hosting your copy of social media 
-icons, library JavaScript, et cetera.
 
 ## Web Server Administration
 
