@@ -2,11 +2,6 @@
   tamufeed
 /* * * * * */
 
-if (typeof define !== 'function' || !define.amd) var define = 
-  function (id,args,func) { 
-    this[id] = func; this[id].apply(this,args); 
-  }//define non-AMD contingency
-
 define('tamufeed', ['jquery','google'], function($, google) {
 /*****************************************************************************/
 
@@ -26,7 +21,6 @@ define('tamufeed', ['jquery','google'], function($, google) {
   var feed    	  = config.feed         || [];
   var entries 	  = config.entries      || [];
   var element 	  = config.element      || {};
-  var async 		  = config.async        || false;
   var sortorder   = config.sort         || "";
   var fetchEntries= config.fetchEntries || 4;
   var wantEntries = config.wantEntries  || 99;
@@ -68,7 +62,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
   // Prerequisite JS checkup //Enhance for AMD
   var good="", err="";
   if ("undefined"===typeof $)
-        err += "jQuery was not loaded.\n";
+        err += "jquery was not loaded.\n";
   else good += "\nYou are running jQuery version: "+$.fn.jquery;
   if ("undefined"===typeof google || "undefined"===typeof google.loader)
         err += "Google JS API was not loaded.\n";
@@ -134,7 +128,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
   var t = function(st,d) { // (string, dictionary)
   //Template function uses the dictionary to replace keys w/values in the string
     if ("string"!==typeof st) throw "t() 1st parameter must be a string; not "+typeof st;
-    for (var key in d) st = st.replace(new RegExp('{{'+key+'}}', 'ig'), d[key]);
+    for (var key in d) st = st.replace(new RegExp('{{'+key+'}}', 'g'), d[key]);
     return st.replace(/({{[^{]*}})/ig,'');
   }//t
 
@@ -158,9 +152,10 @@ define('tamufeed', ['jquery','google'], function($, google) {
     var weekday = d.getDay();
     var Dday= ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][weekday];
     var lday= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][weekday];
-    var month = d.getMonth();
-    var Mmonth= ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month]
-    var Fmonth= ["January","Febuary","March","April","May","June","July","August","September","October","November","December"][month]
+    var month = d.getMonth()+1;
+    var mmonth = (month<10) ? "0"+month : month;
+    var Mmonth= ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month]
+    var Fmonth= ["","January","Febuary","March","April","May","June","July","August","September","October","November","December"][month]
     return {
        "w": weekday         //day of the week (0-6 for Sun-Sat)
       ,"S": ordinal         //English ordinal suffix for day ["st","nd","rd","th"]
@@ -168,7 +163,8 @@ define('tamufeed', ['jquery','google'], function($, google) {
       ,"d": dday            //day of the month (01-31) with leading zeros
       ,"D": Dday            //day of the month e.g. Mon or Tue
       ,"l": lday            //day of the month e.g. Monday or Tuesday
-      ,"n": month+1         //month (1-12)
+      ,"n": month           //month (1-12)
+      ,"m": mmonth          //month (01-12)
       ,"M": Mmonth          //month, short textual representation, three letters
       ,"F": Fmonth          //month, full textual representation e.g. January
       ,"Y": d.getFullYear() //year (4 digits for 4-digit years) 
@@ -341,10 +337,19 @@ define('tamufeed', ['jquery','google'], function($, google) {
 
   var view = function() {
   //This function builds the view for all feeds, synchronously.
-    debug("» View");
-    $.each(feeduri,function(f,feeduri){
-        element.stage.append(t(feedTemplate,viewFeed(f)));
+  //Pubsub: subscribes feed/html, publishes callername/html
+    debug("» View response");
+    $.each(feeduri,function(f,feeduri){ 
+      putDOM(element.stage,t(feedTemplate,viewFeed(f)));
     });
+  }//function view
+
+
+  var putDOM = function(/* Object */element, /* String */html, /* Boolean */overwrite) {
+  //This function puts HTML into the DOM.
+    debug("» putDOM");
+    if (overwrite) element.html(html); //Clear the stage.
+    else element.append(html);
   }//function view
 
 
@@ -406,11 +411,10 @@ define('tamufeed', ['jquery','google'], function($, google) {
 
   var modelFeed = function(f,feed){
   //This function builds the model for a feed.
-    debug("» modelFeed #"+(f+1));
-    debug("# entries = "+feed.entries.length);
+    var quantity = feed.entries.length;
+    debug("» modelFeed #"+(f+1)+" has "+quantity+" entries");
     var type=""; //initialize the feed's type
     var e=0;
-    var quantity = feed.entries.length;
     entries[f] = [];
     for (e; e < quantity; e++) {
       entries[f][e] = modelEntry(e,feed.entries[e]);    //model entry
@@ -441,20 +445,17 @@ define('tamufeed', ['jquery','google'], function($, google) {
   //This function controls model/view of one feed; it is called by putFeed.
   //Enhance: subscribe to the pubsub "/feed/raw"
     debug("» controllerFeed #"+(f+1));
-    if (result.error) return element.stage.append(
+    if (result.error) return putDOM(element,
         t(feedTemplate,{
           "feedUrl" : "" 
           ,"entries": ""
           ,"feedIndex"  :  "error"+result.error.code
           ,"title"      : "Error "+result.error.code+": "+result.error.message
-          ,"description": "Error "+result.error.code+": "+result.error.message
+          ,"description": "Error "+result.error.code+": "+result.error.message+" in feed #"+f
         })//t
     );//return error
     feed[f] = modelFeed(f,result.feed);
-    if (async) {
-      element.stage.append(t(feedTemplate,viewFeed(f)));
-      delete entries[f]; //forget the feed's metadata
-    } else if (!--feed.countdown) {
+    if (!--feed.countdown) {  //When the countdown hits zero,
       view();
       entries = null; //forget all feeds metadata
     }//else if
@@ -462,18 +463,16 @@ define('tamufeed', ['jquery','google'], function($, google) {
 
 
   var controller = function() {
-  //This function controls tamufeed; it is called by putAPI.
-  //Enhance: subscribe to the pubsub "/request"
-    debug("» controller");
+  //This function controls tamufeed. Multifeed controller called by putAPI.
+  //Pubsub: subscribe to "/request"
     feed.quantity = feed.countdown = feeduri.length;
-    debug("--How many feeds? "+feed.quantity);
-    element.stage.attr("data-children",feed.quantity);
-    element.stage.html(""); //Clear out static content from server.
+    debug("» controller of request - for "+feed.quantity+" feeds");
+    //element.stage.attr("data-children",feed.quantity);
+    putDOM(element.stage,"","overwrite");
     $.each(feeduri,function(f,feeduri){
       var servfeed = new service.Feed(feeduri); //new google.feeds.Feed(feeduri);
-      servfeed.includeHistoricalEntries();//TEST
+      //servfeed.includeHistoricalEntries();//TEST
       servfeed.setNumEntries(fetchEntries);
-      debug("--Feed #"+(f+1)+"'s fetchEntires = "+fetchEntries);
       servfeed.load( //Call with Asynchronous Callback
         function(servresult){ putFeed(servresult,f);}
       );
@@ -495,7 +494,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
   }//function init
 
   var putAPI = function() {
-  //This function is asynchronously-called as callback of service API.
+  //This function is a callback of the service API.
     debug("» putAPI");
     if ("undefined"===typeof google.feeds) throw "Google Feeds API failure.";
     service = google.feeds;
