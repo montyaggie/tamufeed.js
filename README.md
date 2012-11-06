@@ -1,36 +1,27 @@
-# tamufeed.js
+This browser-side software is for showing feeds from calendar.tamu.edu.
 
-This browser-side software is optimized for showing calendar.tamu.edu
-feeds. It initializes service connection when the document object model
-is ready and pulls, models, sorts, and shows feeds on the page (in one
-element only).
+It initializes service connection when the document object model
+is ready and pulls, models, sorts, and shows feeds in 1 element.
 
-Welcome to this github open source repo; we're glad you're here.
-Follow to receive news of changes or star to express your interest?
+# Event Type Feeds 
 
-We support your participation in the source code
-and your issues (asking questions, reporting bugs, etc) are welcomed.
+We retrieve news feeds from Google, recognizing and using
+[hCalendar](http://microformats.org/wiki/hcalendar) tagged elements
+in a feed entry's `content` if found.
 
-## Live Demo
+# Live Demo
 
-* [synchronous demo](http://cllacdn.tamu.edu/calendar/sync.php)
 * [asynchronous demo](http://cllacdn.tamu.edu/calendar/)
 * [experimental kiosk demo](http://cllacdn.tamu.edu/calendar/kiosk.php)
 
-## License
+# License
 
 This code is licensed under a
 [BSD 2-clause license](http://opensource.org/licenses/BSD-2-Clause);
 please read LICENSE.txt for the details.
 This software is Copyright © 2012, Texas A&M University.
 
-## Event Entry Modeling
-
-We retrieve news feeds from Google, recognizing and using
-[hCalendar](http://microformats.org/wiki/hcalendar) tagged elements
-in any feed entry's content, if found.
-
-## Dependencies
+# Dependencies
 
 1. [Require.js](http://requirejs.org/) asynchronous JavaScript loader
 2. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 in 2015
@@ -40,9 +31,9 @@ in any feed entry's content, if found.
 
 If you want to retrieve more than ten entries per feed, 
 [obtain a Google API key](https://developers.google.com/maps/documentation/javascript/tutorial#api_key)
-and pass it as the `key=` URL get parameter where you load Google's JSAPI script.
+and pass it as the `key=` URL parameter when you load the `www.google.com/jsapi` script.
 
-## Configuration
+# Configuration
 
 These parameters are set in the `tamufeed` object.
 
@@ -57,60 +48,10 @@ These parameters are set in the `tamufeed` object.
 * `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
 * `debugging` turns on the F12 console debug messages
 
-## Developers
+# Integration (the asynchronous way)
 
-* [Google Feeds API's result object structure](https://developers.google.com/feed/v1/jsondevguide#resultJson)
-* The Texas A&M University's calendar software on the server side is
-[UNL Event Publisher](http://events.unl.edu/) documented at
-http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
-
-## Integration
-
-### Synchronously loading
-
-#### Synchronously loading is under construction; it is not supported yet.
-
-To integrate this software onto a web page (the old fashioned, synchronous way), you basically need to three things in your HTML.
-
-1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
-2. The prerequisite jQuery & Google JS API script tags, and this script. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom.
-3. The text/html script elements, which are the output templates for this script. Put them anywhere *before* this script.
-4. Remove any reliance to resources hosted on *our* demo's
-[server](http://cllacdn.tamu.edu/html/home.html).
-
-Here is an example of #1:
-
-    <script charset="utf-8">
-        //Configuration
-        tamufeed = {
-            "selector": "#tamufeed"
-            ,"fetchEntries": 10
-            ,"wantEntries" :  8
-            ,"url": [
-              "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
-              ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
-            ]
-        }//tamufeed
-    </script>
-
-Here is an example of #2:
-
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
-    <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
-
-For #3, the templates can be copied verbatim out of the synchronous.html sample.
-
-For #4, remove all references to any resources hosted on our
-[cllacdn](http://cllacdn.tamu.edu/html/home.html) server
-before deploying your implementation. Do not use our bandwidth.
-Thanks for using **your own web server** for hosting your copy of social media 
-icons, library JavaScript, etc.
-
-
-### Asynchronously loading
-
-Async JS loading reduces page load time, because it lets scripts load simultaneously, instead of in blocking, queued way. This boosts web performance.
+Async JS loading reduces page load time, because it lets scripts load 
+simultaneously, instead of in blocking, queued way. This boosts web performance.
 [Here's](http://css-tricks.com/thinking-async/)
 [why](http://requirejs.org/docs/why.html) async is best practice
 (c.f.
@@ -118,15 +59,15 @@ Async JS loading reduces page load time, because it lets scripts load simultaneo
 [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html),
 [blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/)).
 
-See `async.html` for the demo using [require.js](http://requirejs.org/)
-integration. 
+View `async.html` source for the demo
+using [require.js](http://requirejs.org/) integration.
 
-## Markup
+# Markup
 
 One thing you must add to your HTML somewhere is the stage element where you
 want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
 
-## Styling
+# Style
 
 You'll want to write some CSS styles to govern the appearance of your
 feed on your page. Feel free to copy liberally from the styles.css, if they
@@ -134,22 +75,19 @@ help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
 
-## Web Server Administration
+# Develop
 
-Ensure that your HTTP service is sending out the X-UA-Compatible: IE=edge 
-HTTP header which tells Microsoft Internet Explorer to behave like its latest
-version. Otherwise IE will most likely pretend it is an earlier version of 
-itself--which could cause problems. Just putting the HTTP-EQUIV in the HTML is
-not sufficient to guarantee edge status. Here is a 2-line index.php shim that
-can be used until you configure your HTTP server response headers:
+* [Google Feeds API's result object structure](https://developers.google.com/feed/v1/jsondevguide#resultJson)
+* The Texas A&M University's calendar software on the server side is
+[UNL Event Publisher](http://events.unl.edu/) documented at
+http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
 
-    <?php header('X-UA-Compatible: IE=edge,chrome=1');
-    require('synchronous.html');
-
-## TAMU Users Support
+# Aggies
 
 Information on the Texas A&M's calendar can be found online on its
 [help page](http://marcomm.tamu.edu/web/calendar/help.html),
 on the [Texas A&M Webmaster blog](http://webmaster.tamu.edu/category/calendar/),
 through the [email list](http://marcomm.tamu.edu/web/calendar/documentation.html#listserv),
 or by contacting the Texas A&M Calendar Team [directly](calendar@tamu.edu).
+
+Gig 'em.
