@@ -1,7 +1,8 @@
-This browser-side software is for showing feeds from calendar.tamu.edu.
+This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
-It initializes service connection when the document object model
-is ready and pulls, models, sorts, and shows feeds in 1 element.
+It works by initializing service connection when the document object model
+is ready. Then it pulls, models, sorts, & shows a view in the stage element.
+
 
 # Event Type Feeds 
 
@@ -48,19 +49,21 @@ These parameters are set in the `tamufeed` object.
 * `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
 * `debugging` turns on the F12 console debug messages
 
-# Integration (the asynchronous way)
+# Integration (asynchronously)
 
 Async JS loading reduces page load time, because it lets scripts load 
-simultaneously, instead of in blocking, queued way. This boosts web performance.
+in parallel (instead of serially); this boosts web performance.
 [Here's](http://css-tricks.com/thinking-async/)
-[why](http://requirejs.org/docs/why.html) async is best practice
+[why](http://requirejs.org/docs/why.html) async *is* best practice
 (c.f.
 [@souders](http://twitter.com/souders),
 [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html),
 [blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/)).
+If you're unfamiliar with asynchronous loaders, you should 
+[read](http://requirejs.org/) the basics of using `require.js`/
 
-View `async.html` source for the demo
-using [require.js](http://requirejs.org/) integration.
+The `async.html` source is intuitive and easy to follow (once you understand
+using an asynchronous script loader).
 
 # Markup
 
@@ -82,12 +85,10 @@ your own CSS.
 [UNL Event Publisher](http://events.unl.edu/) documented at
 http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
 
-# Aggies
+# TAMU Support
 
 Information on the Texas A&M's calendar can be found online on its
 [help page](http://marcomm.tamu.edu/web/calendar/help.html),
 on the [Texas A&M Webmaster blog](http://webmaster.tamu.edu/category/calendar/),
 through the [email list](http://marcomm.tamu.edu/web/calendar/documentation.html#listserv),
 or by contacting the Texas A&M Calendar Team [directly](calendar@tamu.edu).
-
-Gig 'em.

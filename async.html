@@ -17,14 +17,14 @@
 
 <script charset="utf-8">
   //tamufeed configuration 
-	var tamufeed = {
-		"selector": "#tamufeed"
+  var tamufeed = {
+    "selector": "#tamufeed"
     ,"debugging": true
-		,"fetchEntries": 10
-		,"wantEntries" :  5
+    ,"fetchEntries": 10
+    ,"wantEntries" :  5
     ,"truncatedStringMaxLength": 480
     ,"minutesBeforeHistorical": 45
-		,"url": [
+    ,"url": [
       "http://codemaroon.tamu.edu/feed.xml"
       ,"http://feeds.feedburner.com/AggieWebmasters"
       ,"http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
@@ -45,37 +45,37 @@
         ,"minutesBeforeHistorical": 30
       }//^tamucllacal 
     ]//^feeds 
-	}//^tamufeed configuration 
+  }//^tamufeed configuration 
 
   //Require.js configuration 
-	var require = {
-		"enforceDefine" : true  //You can turn this off when loading non-AMD libs.
-		,"baseUrl"      : "."   //Set this path to place where your JS app resides.
+  var require = {
+    "enforceDefine" : true  //You can turn this off when loading non-AMD libs.
+    ,"baseUrl"      : "."   //Set this path to place where your JS app resides.
     ,"waitSeconds"  : 4     //Tighter timeout than default 7 seconds
-		//,"deps"         : ["tamufeed"]  //Unnecessary because main.js deps
+    //,"deps"         : ["tamufeed"]  //Unnecessary because main.js deps
     //,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing
-		,"paths": {
-			"jquery": [
+    ,"paths": {
+      "jquery": [
         "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min"
         ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min"
         ,"http://cdnjs.cloudflare.com/ajax/libs/zepto/1.0rc1/zepto.min"
-			]
-			,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here
-			,"underscore"  : [
+      ]
+      ,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here
+      ,"underscore"  : [
         "http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.8.2/lodash.min"
         ,"http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min"
       ]
       ,"underscorestr": "http://cdnjs.cloudflare.com/ajax/libs/underscore.string/2.3.0/underscore.string.min"
       ,"Backbone": "http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min"
-		}//^paths 
-		,"shim": {
-			"google"        : { exports: "google"}
-			,"underscore"   : { exports: "_"}
-			,"underscorestr": { exports: "_", deps: ["underscore" ]}
-			,"Backbone"     : { exports: "Backbone", deps: ["underscore" ]}
-			,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery", "underscorestr" ]}
-		}//^shim 
-	}//^require 
+    }//^paths 
+    ,"shim": {
+      "google"        : { exports: "google"}
+      ,"underscore"   : { exports: "_"}
+      ,"underscorestr": { exports: "_", deps: ["underscore" ]}
+      ,"Backbone"     : { exports: "Backbone", deps: ["underscore" ]}
+      ,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery", "underscorestr" ]}
+    }//^shim 
+  }//^require 
 </script>
 <script data-main="main.js" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.0.6/require.min.js"></script>
 
@@ -96,7 +96,7 @@
 
 <!-- -------------------------------------------------------------------- -->
 <script type="text/html" id="calendardayTemplate" charset="utf-8">
-<span class="dayOfMonth">{{j}}</span><span class="month">{{M}}</span>
+<span class="month">{{M}}</span><span class="dayOfMonth">{{j}}</span>
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="dateTemplate" charset="utf-8"
