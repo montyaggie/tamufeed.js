@@ -22,9 +22,13 @@
     ,"debugging": true
 		,"fetchEntries": 10
 		,"wantEntries" :  5
-    ,"truncatedStringMaxLength": 2000
+    ,"truncatedStringMaxLength": 480
     ,"minutesBeforeHistorical": 45
-		,"url": "http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
+		,"url": [
+      "http://codemaroon.tamu.edu/feed.xml"
+      ,"http://feeds.feedburner.com/AggieWebmasters"
+      ,"http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
+    ]
     ,"feeds": [
       { "id": "tamucodemaroon"
         ,"url": "http://codemaroon.tamu.edu/feed.xml"
@@ -45,22 +49,21 @@
 
   //Require.js configuration 
 	var require = {
-		"enforceDefine" : true
-		,"baseUrl"      : "."
-    ,"waitSeconds"  : 4       //tighter timeout than default 7 seconds
-		,"deps"         : ["tamufeed"]
+		"enforceDefine" : true  //You can turn this off when loading non-AMD libs.
+		,"baseUrl"      : "."   //Set this path to place where your JS app resides.
+    ,"waitSeconds"  : 4     //Tighter timeout than default 7 seconds
+		//,"deps"         : ["tamufeed"]  //Unnecessary because main.js deps
     //,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing
 		,"paths": {
 			"jquery": [
-				//"jquery.min"
-         "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min"
-         ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min"
-        ,"http://cdnjs.cloudflare.com/ajax/libs/zepto/1.0rc1/zepto.min.js"
+        "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min"
+        ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min"
+        ,"http://cdnjs.cloudflare.com/ajax/libs/zepto/1.0rc1/zepto.min"
 			]
 			,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here
 			,"underscore"  : [
-        "http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.8.2/lodash.min",
-        "http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min"
+        "http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.8.2/lodash.min"
+        ,"http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min"
       ]
       ,"underscorestr": "http://cdnjs.cloudflare.com/ajax/libs/underscore.string/2.3.0/underscore.string.min"
       ,"Backbone": "http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min"
