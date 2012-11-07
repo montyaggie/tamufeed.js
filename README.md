@@ -1,14 +1,27 @@
 This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
+# How to get it
+
+The [master branch](https://github.com/montyaggie/tamufeed.js/tree/master)
+is where active development is happening; it's the unstable distribution
+for developers.
+
+For your first use, click on [tags](https://github.com/montyaggie/tamufeed.js/tags)
+and grab the latest version e.g.
+[0.1.2](https://github.com/montyaggie/tamufeed.js/archive/0.1.2.zip).
+
+# How it works
+
 It works by initializing service connection when the document object model
 is ready. Then it pulls, models, sorts, & shows a view in the stage element.
 
+# Feed Types
 
-# Event Type Feeds 
-
-We retrieve news feeds from Google, recognizing and using
-[hCalendar](http://microformats.org/wiki/hcalendar) tagged elements
-in a feed entry's `content` if found.
+We retrieve news feeds from Google, recognizing
+[microformats](http://microformats.org/)
+in a feed entry's `content` if found e.g. 
+[hCalendar](http://microformats.org/wiki/hcalendar),
+[hCard](http://microformats.org/wiki/hcard).
 
 # Live Demo
 
