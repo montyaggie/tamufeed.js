@@ -82,7 +82,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
   // Bind element from selector
   var element = {};
   element.stage = $(selector.stage);
-  if (!element.stage) return alert("Script configuration problem: tamufeed.js did not find the HTML element.");
+  if (!element.stage) debug("Script configuration problem: tamufeed.js did not find the HTML element.");
 
   // Load Templates
   var dateTemplate    = $(selector.dateTemplate).html();
@@ -155,7 +155,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
     var month = d.getMonth()+1;
     var mmonth = (month<10) ? "0"+month : month;
     var Mmonth= ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month]
-    var Fmonth= ["","January","Febuary","March","April","May","June","July","August","September","October","November","December"][month]
+    var Fmonth= ["","January","February","March","April","May","June","July","August","September","October","November","December"][month]
     return {
        "w": weekday         //day of the week (0-6 for Sun-Sat)
       ,"S": ordinal         //English ordinal suffix for day ["st","nd","rd","th"]
@@ -360,18 +360,15 @@ define('tamufeed', ['jquery','google'], function($, google) {
   //This function models one entry.
     var isoAttr;
     var r = {
-      publishedDate: entry.publishedDate   || 0
-      ,title : escapeHTML(trunc(entry.title)) || ""
-      ,link  : escapeHTML(trunc(entry.link))  || ""
-      ,author: escapeHTML(trunc(entry.author))|| ""
+      publishedDate: entry.publishedDate || 0
+      ,title : escapeHTML(trunc(entry.title ))
+      ,link  : escapeHTML(trunc(entry.link  ))
+      ,author: escapeHTML(trunc(entry.author))
     }//$.extend(entries[feedIndex][index],feed.entries[index]); 
     if (!entry.content) return r;
     //content: transform all REL → CLASS
     r.content = xsshtml(entry.content.replace(/\brel="/ig,' class="'));
     r.description = viewProperty("description",r.content);
-    //---------------------------IMAGES----------------------------
-    var images = $(r.description).find("img");
-    //...
     //--------------------------DATE/TIME--------------------------
     var dtstartEle  = $(r.description).find(".dtstart");
     if (dtstartEle) {
@@ -393,6 +390,20 @@ define('tamufeed', ['jquery','google'], function($, google) {
     }//if dtstartEle
     //--------------------------DATE/TIME--------------------------
     r.pubDate = new Date(r.publishedDate);
+    //---------------IMAGES---------------
+    r.images = $.each( $(r.description).find("img"), function(i,img) {
+      var ele=$(img);
+      img = {};
+      img.src   = encodeURI( ele.attr("src"   ) || "");
+      img.alt   = escapeHTML(ele.attr("alt"   ));
+      img.class = escapeHTML(ele.attr("class" )); //why microformats
+      img.style = escapeHTML(ele.attr("style" )); //escapeCSS?
+      img.title = escapeHTML(ele.attr("title" ));
+      img.width = escapeHTML(ele.attr("width" ));
+      img.height= escapeHTML(ele.attr("height"));
+      //debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
+    });//each img of imgelements
+    //^^^^^^^^^^^^^^^IMAGES^^^^^^^^^^^^^^^
     r.location = escapeHTML(trunc($(r.description).find(".location").text()));
     if (r.location) { // Event // Event // Event 
       r.type = "event";
@@ -403,6 +414,16 @@ define('tamufeed', ['jquery','google'], function($, google) {
       r.type = ""; 
       r.summary = xsshtml(trunc(entry.content));
     }
+    //--- http://microformats.org/wiki/hcard
+    r.fn  = escapeHTML(trunc($(r.description).find(".fn").text()));
+    r.url = escapeHTML(trunc($(r.description).find(".url").text()));
+    r.org = escapeHTML(trunc($(r.description).find(".org").text()));
+    r.tel = escapeHTML(trunc($(r.description).find(".tel").text()));
+    r.bday= escapeHTML(trunc($(r.description).find(".bday").text()));
+    r.note= escapeHTML(trunc($(r.description).find(".note").text()));
+    r.n   = xsshtml(trunc($(r.description).find(".n").text()));
+    r.adr = xsshtml(trunc($(r.description).find(".adr").text()));
+    //--- http://microformats.org/wiki/hcard
     r.subtitle = escapeHTML(trunc($(r.description).find(".subtitle").text()));
     r.description = viewProperty("description",r.content); //css hides
     return r;
@@ -490,7 +511,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
     if ("undefined"===typeof google) throw "Google API loader failure.";
     if (element.stage) 
       google.load("feeds","1",{"callback":putAPI,"nocss":true});
-    else debug("tamufeed.element.stage not found."); //fail silently
+    else debug("tamufeed.element.stage not found."); //fail silently if debugging
   }//function init
 
   var putAPI = function() {
