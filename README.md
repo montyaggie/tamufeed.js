@@ -2,13 +2,13 @@ This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
 # Getting Started
 
-For your first use, click on [tags](https://github.com/montyaggie/tamufeed.js/tags)
+For your first use, click on [tags](/montyaggie/tamufeed.js/tags)
 and download the latest version e.g.
-[0.1.2 "zip"](https://github.com/montyaggie/tamufeed.js/archive/0.1.2.zip).
+[0.1.2](/montyaggie/tamufeed.js/archive/0.1.2.zip).
 
 # Live Demos
 
-* [asynchronously loading scripts](http://cllacdn.tamu.edu/calendar/)
+* [demo](http://cllacdn.tamu.edu/calendar/)
 
 # License
 
@@ -59,7 +59,7 @@ These parameters are set in the `tamufeed` object.
 * `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
 * `debugging` turns on the F12 console debug messages
 
-# Integration (asynchronously)
+# Use Asynchronous Script Loading
 
 Async JS loading reduces page load time, because it lets scripts load 
 in parallel (instead of serially); this boosts web performance.
@@ -80,6 +80,27 @@ using an asynchronous script loader).
 One thing you must add to your HTML somewhere is the stage element where you
 want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
 
+# Templates
+
+This program allows you to customize the HTML output via templates that you
+control in your markup. The variables, where the script injects its content,
+are always delimited by mustache/handlebar characters like `{{this}}`.
+
+* `feedTemplate` governs what feeds will be marked up with
+* `entryTemplate` controls the display of entries (of all types)
+* `dateTemplate` formats how the date part of `{{time}}` should look
+* `propertyTemplate` is how individual properties will be marked up
+* `encasedTemplate` is used to encase any HTML value that could possibly be malformed
+* `calendardayTemplate` decides how the `{{calendarday}}` come out
+
+## Date Templates Variables
+
+The single-letter variables used with dates is an incomplete subset of
+[here](http://www.php.net/manual/en/function.date.php). If you encounter one
+that you would like to use that isn't yet implemented, 
+[create an issue](/montyaggie/tamufeed.js/issues/new) requesting it be added
+and we'll fix that for you.
+
 # Style
 
 You'll want to write some CSS styles to govern the appearance of your
@@ -88,7 +109,7 @@ help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
 
-# Developer Reference
+# Developer Links
 
 * [Google Feeds API's result object structure](https://developers.google.com/feed/v1/jsondevguide#resultJson)
 * The Texas A&M University's calendar software on the server side is
