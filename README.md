@@ -1,32 +1,14 @@
 This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
-# How to get it
-
-The [master branch](https://github.com/montyaggie/tamufeed.js/tree/master)
-is where active development is happening; it's the unstable distribution
-for developers.
+# Getting Started
 
 For your first use, click on [tags](https://github.com/montyaggie/tamufeed.js/tags)
-and grab the latest version e.g.
-[0.1.2](https://github.com/montyaggie/tamufeed.js/archive/0.1.2.zip).
+and download the latest version e.g.
+[0.1.2 "zip"](https://github.com/montyaggie/tamufeed.js/archive/0.1.2.zip).
 
-# How it works
+# Live Demos
 
-It works by initializing service connection when the document object model
-is ready. Then it pulls, models, sorts, & shows a view in the stage element.
-
-# Feed Types
-
-We retrieve news feeds from Google, recognizing
-[microformats](http://microformats.org/)
-in a feed entry's `content` if found e.g. 
-[hCalendar](http://microformats.org/wiki/hcalendar),
-[hCard](http://microformats.org/wiki/hcard).
-
-# Live Demo
-
-* [asynchronous demo](http://cllacdn.tamu.edu/calendar/)
-* [experimental kiosk demo](http://cllacdn.tamu.edu/calendar/kiosk.php)
+* [asynchronously loading scripts](http://cllacdn.tamu.edu/calendar/)
 
 # License
 
@@ -46,6 +28,21 @@ This software is Copyright © 2012, Texas A&M University.
 If you want to retrieve more than ten entries per feed, 
 [obtain a Google API key](https://developers.google.com/maps/documentation/javascript/tutorial#api_key)
 and pass it as the `key=` URL parameter when you load the `www.google.com/jsapi` script.
+
+# How it works
+
+tamufeed.js works by initializing service connection,
+when the document object model is ready.
+Then it pulls feeds, models data, sorts entries &
+puts a view into the stage element on the page.
+
+# Feed Types
+
+We retrieve news feeds from Google, recognizing
+[microformats](http://microformats.org/)
+in a feed entry's `content` if found e.g. 
+[hCalendar](http://microformats.org/wiki/hcalendar),
+[hCard](http://microformats.org/wiki/hcard).
 
 # Configuration
 
@@ -91,7 +88,7 @@ help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
 
-# Develop
+# Developer Reference
 
 * [Google Feeds API's result object structure](https://developers.google.com/feed/v1/jsondevguide#resultJson)
 * The Texas A&M University's calendar software on the server side is
