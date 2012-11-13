@@ -10,20 +10,25 @@ and download the latest version e.g.
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser.
 
-## Live Demo
+## Demonstration
 
-* [demo](http://cllacdn.tamu.edu/calendar/)
+* [Check out a live demo.](http://cllacdn.tamu.edu/calendar/)
 
 ## License
 
-This software is Copyright © 2012, Texas A&M University.
-Licensed under a
-[BSD 2-clause](http://opensource.org/licenses/BSD-2-Clause) license:
-see LICENSE.txt for the details.
+Copyright © 2012, Texas A&M University.
+
+This is [open source](http://www.opensource.org/docs/osd) 
+and [free software](http://www.gnu.org/philosophy/free-sw.html),
+which means that it is not only available for download free of charge, 
+but you have access to the source code and may modify and redistribute 
+our software subject to certain restrictions;
+for details, read the `LICENSE.txt`.
 
 ## Files
 
-These are the included files that you must have to get started:
+These are the files included in this distribution
+that you must have to get started:
 
 * `tamufeed.js` is the program's code
 * `synchronous.html` or `async.html` is HTML
@@ -57,24 +62,8 @@ puts a view into the stage element on the page.
 ## Feed Types
 
 We retrieve news feeds from Google, recognizing
-[microformats](http://microformats.org/)
-in a feed entry's `content` if found.
-
-## Configuration
-
-These parameters are set in the `tamufeed` object.
-
-* `url` feed address
-* `selector` the CSS selector that locates your stage element uniquely
-* `sort` sorts entries
-    * `"forward"` sorts entries descending, but events ascending
-    * `"reverse"` sorts entries ascending time, but events descending
-    * `"shuffle"` sorts entries randomly
-* `fetchEntries` number of entries to fetch from the service provider for each feed. For calendar feeds, this should be high enough to still have enough events to display after the historical events are set to `display:none`.
-* `wantEntries` number of entries you want to show. After this number of entries is exceeded (not counting any historical events), the CSS class `over` is put onto subsequent entries, enabling CSS to `display:none` them.
-* `truncatedStringMaxLength` sets number of characters (default 300)
-* `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
-* `debugging` turns on the F12 console debug messages
+[microformats](http://microformats.org/) such as calendar items
+in every entry's `content` part.
 
 ## How to use
 
@@ -97,18 +86,18 @@ you basically need to add four things in your HTML.
 Let the demo `synchronous.html` be your guide.
 
 1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
-2. The prerequisite jQuery & Google JS API script tags, and this script. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom.
-3. The text/html script elements, which are the output templates for this script. Put them anywhere *before* this script.
+2. The text/html script elements, which are the output templates for this script. You can put them almost anywhere.
+3. The prerequisite jQuery & Google.com/jsapi script tags and then tamufeed.js. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom (but above #4).
 4. And finally, copy the bottom-most inline script block in the demo's HTML
-to the bottom of your HTML.
+to the bottom of your HTML (immediately following the tags from #3).
 
 Here is an example of #1:
 
-    <script charset="utf-8">
+    <script>
         //Configuration
         tamufeed = {
             "selector": "#tamufeed"
-            ,"fetchEntries": 10
+            ,"fetchEntries": 9
             ,"url": [
               "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
               ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
@@ -116,24 +105,24 @@ Here is an example of #1:
         }//tamufeed
     </script>
 
-Here is an example of #2:
+For #2, the templates can be copied verbatim out of the `synchronous.html` sample.
+Make sure they're above the things in the next two steps.
+
+Here is an example of #3:
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
-For #3, the templates can be copied verbatim out of the synchronous.html sample.
-
-When you've got things at full function, 
-remove your reliance on the scripts, styles or graphics hosted on *our* demo
-[server](http://cllacdn.tamu.edu/html/home.html). Do not use our bandwidth;
-thanks for using **your own web server** for hosting your copy of social media 
-icons, JavaScript, etc.
-
-For #4, make sure that you copy the bottom most `<script>` block to the bottom
-of your own HTML. You'll see conditionals there that test that you got the 
-dependencies and script loaded; you can leave those in without any material
+For #4, make sure that you copy the bottom-most `<script>` block to the bottom
+of your own HTML's body. You'll see conditionals there that test that you got the 
+dependencies and script loaded—you can leave those in without any material
 performance hit. Or you can remove them after your successful integration.
+
+When you've got things running, remove your reliance on the files, styles &
+graphics hosted on *our* demo [server](http://cllacdn.tamu.edu/html/home.html).
+Do not use our bandwidth. Thanks for using **your own web server** for hosting 
+your copy of social media icons, JavaScripts, et cetera.
 
 ### High Performance integration
 
@@ -155,6 +144,22 @@ and easy to follow once you understand at little about
 
 One thing you must add to your HTML somewhere is the stage element where you
 want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
+
+## Configuration
+
+These parameters are set in the `tamufeed` object.
+
+* `url` feed address
+* `selector` the CSS selector that locates your stage element uniquely
+* `sort` sorts entries
+    * `"forward"` sorts entries descending, but events ascending
+    * `"reverse"` sorts entries ascending time, but events descending
+    * `"shuffle"` sorts entries randomly
+* `fetchEntries` number of entries to fetch from the service provider for each feed. For calendar feeds, this should be high enough to still have enough events to display after the historical events are set to `display:none`.
+* `wantEntries` number of entries you want to show. After this number of entries is exceeded (not counting any historical events), the CSS class `over` is put onto subsequent entries, enabling CSS to `display:none` them.
+* `truncatedStringMaxLength` sets number of characters (default 300)
+* `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
+* `debugging` turns on the F12 console debug messages
 
 ## Templates
 
@@ -193,9 +198,9 @@ your own CSS.
 
 When assigning class names on markup elements, we conform to these.
 
-* Events, [hCalendar](http://microformats.org/wiki/hcalendar)
-* Persons, [hCard](http://microformats.org/wiki/hcard)
-* Stories, [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
+* For Events, [hCalendar](http://microformats.org/wiki/hcalendar).
+* For Persons, [hCard](http://microformats.org/wiki/hcard).
+* For Stories, [RFC4287](http://tools.ietf.org/html/rfc4287).
 
 ### For Programmers
 
