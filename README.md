@@ -6,7 +6,7 @@ This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
 For your first use, click on [tags](/montyaggie/tamufeed.js/tags)
 and download the latest version e.g.
-[0.1.2](/montyaggie/tamufeed.js/archive/0.1.2.zip).
+[0.1.2](/montyaggie/tamufeed.js/archive/0.1.3.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser.
 
@@ -79,11 +79,14 @@ These parameters are set in the `tamufeed` object.
 ## Synchronous Integration
 
 To integrate this software onto a web page (the old synchronous way), 
-you basically need to add three things in your HTML.
+you basically need to add four things in your HTML.
+Let the demo `synchronous.html` be your guide!
 
 1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
 2. The prerequisite jQuery & Google JS API script tags, and this script. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom.
 3. The text/html script elements, which are the output templates for this script. Put them anywhere *before* this script.
+4. And finally, copy the bottom-most inline script block in the demo's HTML
+to the bottom of your HTML.
 
 Here is an example of #1:
 
@@ -92,7 +95,6 @@ Here is an example of #1:
         tamufeed = {
             "selector": "#tamufeed"
             ,"fetchEntries": 10
-            ,"wantEntries" :  8
             ,"url": [
               "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
               ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
@@ -114,7 +116,12 @@ remove your reliance on the scripts, styles or graphics hosted on *our* demo
 thanks for using **your own web server** for hosting your copy of social media 
 icons, JavaScript, etc.
 
-## Asynchronous Script Loading
+For #4, make sure that you copy the bottom most `<script>` block to the bottom
+of your own HTML. You'll see conditionals there that test that you got the 
+dependencies and script loaded; you can leave those in without any material
+performance hit. Or you can remove them after your successful integration.
+
+## Asynchronous script option
 
 Async JS loading reduces page load time, because it lets scripts load 
 in parallel (instead of serially); this boosts web performance.
