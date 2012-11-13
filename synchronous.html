@@ -1,26 +1,44 @@
-<!DOCTYPE html>
-<html lang="en" class="calendardemo">
+<!doctype html>
+
+<!--[if lt IE 7]> <html class="ie6 oldie badie demo" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie badie demo" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie       demo" lang="en"> <![endif]-->
+<!--[if IE 9]>    <html class="ie9             demo" lang="en"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html class="demo" lang="en">
+<!--<![endif]-->
+
 <head>
   <meta charset="utf-8"/>
   <meta http-equiv="Cache-Control" content="max-age=0,must-revalidate" />
   <meta http-equiv="Expires" content="Thu, 04 Oct 12 20:00:00 +0000" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.7.2/build/cssreset/cssreset-min.css">
-  <link rel="stylesheet" type="text/css" href="./styles.css" charset="utf-8"/>
+
+<script charset="utf-8">
+  //tamufeed configuration
+  var tamufeed = {
+    "selector": "#tamufeed"
+    ,"debugging": true
+    ,"fetchEntries": 10
+    ,"wantEntries" :  9
+    ,"truncatedStringMaxLength": 480
+    ,"minutesBeforeHistorical": 45
+    ,"url": [
+      "http://codemaroon.tamu.edu/feed.xml",
+      "http://cal.tamu.edu/liberalarts/upcoming/?format=rss",
+      "http://feeds.feedburner.com/AggieWebmasters"
+    ]//^url
+  }//^tamufeed configuration
+</script>
+
+  <link href="./normalize.css" rel="stylesheet" type="text/css" charset="utf-8"
+    data-doc="http://necolas.github.com/normalize.css/"/>
+  <link href="./styles.css" rel="stylesheet" type="text/css" charset="utf-8" charset="utf-8"/>
 
   <title>demonstration</title>
-  <meta name="description" content="Non-AMD demonstration of tamufeed.js">
   <meta name="author" content="Monty Dickerson">
 
-  <script charset="utf-8">//Settings
-    var tamufeed = {
-      "selector": "#tamufeed"
-      ,"fetchEntries": 10
-      ,"wantEntries" :  9
-      ,"url": "http://cal.tamu.edu/liberalarts/upcoming/?format=rss"
-    }
-  </script>
 </head>
 <body>
 
@@ -30,8 +48,8 @@
 </div>
 
 <!-- -------------------------------------------------------------------- -->
-<script type="text/html" id="calendardayTemplate" charset="utf-8">
-<span class="dayOfMonth">{{j}}</span><span class="month">{{M}}</span>
+<script type="text/html" id="dateBlockTemplate" charset="utf-8">
+<span class="month">{{M}}</span><span class="dayOfMonth">{{j}}</span>
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <script type="text/html" id="dateTemplate" charset="utf-8"
@@ -69,7 +87,7 @@
 <div class="item entry {{tags}} {{attributes}}"
   data-index="{{index}}" data-peers="{{quantity}}">
 <div class="feature">
-  {{calendarday}}
+  {{dateBlock}}
   <h3><a href="{{link}}" class="entry-title title">{{title}}</a></h3>
   {{subtitle}}
 </div><div style="clear:left;"></div>
@@ -100,16 +118,15 @@
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 
-
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" charset="utf-8"></script>
-<script src="https://www.google.com/jsapi" charset="utf-8">
-// Add a get parameter "key" if need to specify TAMU's API key.
-</script>
+<script src="https://www.google.com/jsapi?" charset="utf-8"></script>
 <script src="./tamufeed.js" charset="utf-8"></script>
 
-<script>//Check Point
-if ("undefined"===typeof tamufeed.VERSION) alert("tamufeed.js not loaded.");
+<script>
+if ("undefined"===typeof $) alert("jQuery was not loaded.");
+if ("undefined"===typeof google) alert("Google JS API was not loaded.");
+if ("undefined"===typeof tamufeed) alert("tamufeed.js was not loaded.");
+else $(function() { tamufeed.init(); });
 </script>
-
 </body>
 </html>
