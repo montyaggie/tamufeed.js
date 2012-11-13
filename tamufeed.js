@@ -2,7 +2,7 @@
   tamufeed
 /* * * * * */
 
-define('tamufeed', ['jquery','google'], function($, google) {
+var tamufeed = (function(window, $, google, undefined) {
 /*****************************************************************************/
 
   // Initial Setup
@@ -10,20 +10,22 @@ define('tamufeed', ['jquery','google'], function($, google) {
   "use strict";
   var VERSION = '0.1.3';
 
-  // Object Data
+  // Stores
   // -------------
   var service;            //saves the link to google.feeds
+  var payload = [];       //saves the payloads returned from google.feeds
+  var element = {};       //saves the jQuery element of the stage
   var name = "tamufeed";  //each instantiation should have a unique name
 
   // Configuration
   var config = tamufeed; //from global namespace
   var debugging   = config.debugging    || false;
-  var feed    	  = config.feed         || [];
-  var entries 	  = config.entries      || [];
-  var element 	  = config.element      || {};
+  var feed        = config.feed         || [];
+  var entries     = config.entries      || [];
   var sortorder   = config.sort         || "";
   var fetchEntries= config.fetchEntries || 4;
   var wantEntries = config.wantEntries  || 99;
+  var overWantedClass = config.overWantedClass = "over";
   var truncatedStringMaxLength = config.truncatedStringMaxLength 
     || 300; //characters
   var millisecondsBeforeHistorical = config.minutesBeforeHistorical * 60000
@@ -33,19 +35,13 @@ define('tamufeed', ['jquery','google'], function($, google) {
   var feeduri = config.url;
   if ("string"===typeof feeduri) feeduri = [feeduri];
 
-  var overWantedClass = "over";
 
-  // Polyfills backporting some ECMA262-5
+  // Polyfills / shims
   // ------------------------------------
 
   // Date.now
   Date.valueOf = Date.now = Date.now || function() { return +new Date; };
-  // Array.forEach
-  if (!('forEach' in Array.prototype)) Array.prototype.forEach =
-    function(/* function */action, /* object */that) {
-      for (var i=0, n=this.length; i<n; i++)
-        if (i in this) action.call(that, this[i], i, this);
-    }//function
+
   // console
   if ("undefined"===typeof console)
     console = (function(){ z = function(){}; return { 
@@ -55,72 +51,32 @@ define('tamufeed', ['jquery','google'], function($, google) {
       ,profile:z ,profileEnd:z ,time:z ,timeEnd:z ,assert:z
   }})();
 
-  // Debugging Functions
-  var error = console.error || $.error;
-  var debug = function(s){if (debugging) return console.debug(s);};
-
-  // Prerequisite JS checkup //Enhance for AMD
-  var good="", err="";
-  if ("undefined"===typeof $)
-        err += "jquery was not loaded.\n";
-  else good += "\nYou are running jQuery version: "+$.fn.jquery;
-  if ("undefined"===typeof google || "undefined"===typeof google.loader)
-        err += "Google JS API was not loaded.\n";
-  else good += "\nYou are running Google JS API with key: "+google.loader.ApiKey;
-  if (err) { alert (err+"PLEASE FIX THESE PROBLEMS.\n\n"+good); return;}
+  // debugging functions
+  var error = alert || $.error || console.error;
+  var debug = function(msg){if (debugging) return console.debug(msg);};
 
   // CSS Selectors
   selector.stage = selector.stage || "#tamufeed";
   selector.propertyTemplate    = selector.propertyTemplate || "#propertyTemplate";
   selector.entryTemplate       = selector.entryTemplate    || "#entryTemplate";
   selector.feedTemplate        = selector.feedTemplate     || "#feedTemplate";
-  selector.timeTemplate        = selector.timeTemplate     || "#timeTemplate";
   selector.dateTemplate        = selector.dateTemplate     || "#dateTemplate";
   selector.encasedTemplate     = selector.encasedTemplate  || "#encasedTemplate";
-  selector.calendardayTemplate = selector.calendardayTemplate || "#calendardayTemplate";
-
-  // Bind element from selector
-  var element = {};
-  element.stage = $(selector.stage);
-  if (!element.stage) debug("Script configuration problem: tamufeed.js did not find the HTML element.");
+  selector.dateBlockTemplate = selector.dateBlockTemplate || "#dateBlockTemplate";
 
   // Load Templates
   var dateTemplate    = $(selector.dateTemplate).html();
   var propertyTemplate= $(selector.propertyTemplate).html();
   var feedTemplate    = $(selector.feedTemplate).html();
   var entryTemplate   = $(selector.entryTemplate).html();
-  var encasedTemplate = $(selector.encasedTemplate).html();
-  var calendardayTemplate = $(selector.calendardayTemplate).html();
+  var encasedTemplate = $(selector.encasedTemplate).html() || 
+    '<table class="{{key}}"><tbody><tr><td class="{{key}}" {{dataAttr}}>{{value}}</td></tr></tbody></table>';
+  var dateBlockTemplate = $(selector.dateBlockTemplate).html();
 
   // Fallback URL's
   if (!feeduri) feeduri = [
     "http://codemaroon.tamu.edu/feed.xml"
-    ,"http://feeds.feedburner.com/TAMUTrafficConstruction?format=xml"
-/**
-    ,"http://liberalarts.tamu.edu/feeds/collegenews.rss"
-    ,"http://academyarts.tamu.edu/feed/"
-    ,"http://gdata.youtube.com/feeds/api/users/TAMUliberalarts/uploads"
-    ,"http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
-    ,"http://cal.tamu.edu/perf/upcoming/?format=rss"
-    ,"http://cal.tamu.edu/internationalstudies/upcoming/?format=rss"
-    ,"http://calendar.tamu.edu/?calendar_id=73&upcoming&format=rss"  //Stark
-    ,"http://calendar.tamu.edu/?calendar_id=103&upcoming&format=rss" //Forsyth
-/**/
   ];
-
-  // Fallback Templates
-  var timeTemplate = timeTemplate || '{{g}}:{{i}}{{a}}';
-  var dateTemplate = dateTemplate || '{{l}}, {{F}} {{j}}<sup>{{S}}</sup>, {{Y}}';
-  var propertyTemplate= propertyTemplate ||
-    '<{{element}} class="{{key}}" title="{{title}}">{{value}}</{{element}}>';
-  var feedTemplate  = feedTemplate ||
-    "<div class='feed channel {{feedKey}} {{attributes}}' data-source='{{feedUrl}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h2 class='feed-title'>{{title}}</h2> \n<div class='feed-description'>{{description}}</div> \n{{entries}}\n</div>\n"; 
-  var entryTemplate = entryTemplate ||
-    "<div class='item entry {{tags}} {{attributes}}' data-categories='{{tags}}' data-index='{{index}}' data-entries='{{quantity}}'> \n<h3><a href='{{link}}' class='entry-title'>{{title}}</a></h3> \n{{subtitle}} \n{{summary}} \n{{author}} \n{{location}} \n{{pubDate}} \n{{time}} \n<div class='share'> \n<span class='facebook social unshine'> \n <a href='http://www.facebook.com/sharer.php?u={{linkencoded}}' title='Share on this Facebook »'>Share this on Facebook » </a> \n</span><span class='twitter social unshine'> \n<a href='http://twitter.com/home?status={{linkencoded}}' title='Tweet this »'>Share this on Twitter » </a> \n</span><span class='linkedin social unshine'> \n<a href='http://www.linkedin.com/shareArticle?url={{linkencoded}}' title='Share on this LinkedIn »'>Share this on LinkedIn » </a> \n</span> \n</div> \n{{categories}} \n{{bookmark}} \n{{description}} \n</div>";
-  var calendardayTemplate = calendardayTemplate || 
-    '<span class="dayOfMonth">{{j}}</span><span class="month">{{M}}</span>';
-  var encasedTemplate = encasedTemplate || 
-    '<table class="{{key}}"><tbody><tr><td class="{{key}}" {{dataAttr}}>{{value}}</td></tr></tbody></table>';
 
 
   // Template Function
@@ -225,8 +181,12 @@ define('tamufeed', ['jquery','google'], function($, google) {
   // Comparison functions
   // ---------------------
 
+  var shuffle = function(a,b) {
+    return !!(0.5 - Math.random());
+  }//function
+
   var byPubDate = function(a,b) {
-    a = "object"===typeof a.pubDate ? a.pubDate.getTime() : 0; //e.g. 1227886896000
+    a = "object"===typeof a.pubDate ? a.pubDate.getTime() : 0;
     b = "object"===typeof b.pubDate ? b.pubDate.getTime() : 0;
     return  a > b;
   }//function
@@ -257,19 +217,22 @@ define('tamufeed', ['jquery','google'], function($, google) {
   }//function viewProperty
 
 
-  var viewEntry = function(index,entry,quantity){
+  var viewEntry = function(e,entry,quantity){
   //This function builds the view for an entry.
-    var day,timespan,dtstart,dtend,calendarday;
-    var attributes = ["odd ","even"][index%2];
-    if (entry.type)      attributes += " vevent";
+    var day,timespan,dtstart,dtend,dateBlock;
+    var attributes = ["odd ","even"][e%2];
+    if (entry.type.indexOf("event")>=0) attributes += " vevent";
+    else if (entry.type.indexOf("person")>=0) attributes += " vcard";
     if (entry.historical) attributes += " historical";
+    //debug("» viewEntry #"+(e+1)+" type "+entry.type);
+
     if (entry.dtstart) { //---------------------
       timespan = dtstart = viewProperty("dtstart",entry.dtstart,{"iso8601":entry.dtstartISO8601});
       if ("Invalid Date"===entry.start.toLocaleDateString()) 
         day = entry.publishedDate || entry.dstartISO8601;
       else 
         day = t(dateTemplate,dt(entry.start));
-      calendarday = t(calendardayTemplate,dt(entry.start));
+      dateBlock = t(dateBlockTemplate,dt(entry.start));
       if (entry.dtend) {
         dtend = viewProperty("dtend",entry.dtend,{"iso8601":entry.dtendISO8601});
         timespan = timespan + "&ndash;" + dtend;
@@ -287,13 +250,13 @@ define('tamufeed', ['jquery','google'], function($, google) {
       ,"tags"       : ""
       ,"categories" : ""
       ,"description": entry.description
-      ,"index"      : index+1
+      ,"index"      : e+1
       ,"quantity"   : quantity
       ,"attributes" : attributes
       ,"dtstart"    : dtstart
       ,"dtend"      : dtend
       ,"date"       : day
-      ,"calendarday": viewProperty("calendarday",calendarday)
+      ,"dateBlock"  : viewProperty("dateBlock",dateBlock)
       ,"time"       : viewProperty("time"       ,timespan)
       ,"bookmark"   : viewProperty("bookmark"   ,entry.link)
       ,"subtitle"   : viewProperty("subtitle"   ,entry.subtitle)
@@ -310,6 +273,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
     debug("» viewFeed #"+(f+1));
     var e=0, markup = '', novel=0;
     var feedAttributes = ["odd ","even"][f%2];
+    feedAttributes += " "+feed[f]["type"];
     var quantity = feed[f]["quantity"];
     if (!quantity) {
       markup = '<p class="noentry">Nothing to report.</p>';
@@ -347,7 +311,7 @@ define('tamufeed', ['jquery','google'], function($, google) {
 
   var putDOM = function(/* Object */element, /* String */html, /* Boolean */overwrite) {
   //This function puts HTML into the DOM.
-    debug("» putDOM");
+    debug("» putDOM "+(!!overwrite ? "overwrite" : "append"));
     if (overwrite) element.html(html); //Clear the stage.
     else element.append(html);
   }//function view
@@ -356,15 +320,17 @@ define('tamufeed', ['jquery','google'], function($, google) {
   // Model Functions
   // ===============
 
-  var modelEntry = function(index,entry) {
+  var modelEntry = function(f,e) {
   //This function models one entry.
+    debug("» modelEntry feed #"+(f+1)+" entry #"+(e+1));
+    var entry = payload[f].feed.entries[e];
     var isoAttr;
     var r = {
       publishedDate: entry.publishedDate || 0
       ,title : escapeHTML(trunc(entry.title ))
       ,link  : escapeHTML(trunc(entry.link  ))
       ,author: escapeHTML(trunc(entry.author))
-    }//$.extend(entries[feedIndex][index],feed.entries[index]); 
+    }//$.extend(entries[feedIndex][e],feed.entries[e]); 
     if (!entry.content) return r;
     //content: transform all REL → CLASS
     r.content = xsshtml(entry.content.replace(/\brel="/ig,' class="'));
@@ -395,64 +361,75 @@ define('tamufeed', ['jquery','google'], function($, google) {
       var ele=$(img);
       img = {};
       img.src   = encodeURI( ele.attr("src"   ) || "");
-      img.alt   = escapeHTML(ele.attr("alt"   ));
+      if (img.src.indexOf("gravatar.com/avatar")) ele.addClass("photo gravatar");
       img.class = escapeHTML(ele.attr("class" )); //why microformats
-      img.style = escapeHTML(ele.attr("style" )); //escapeCSS?
+      img.style = escapeHTML(ele.attr("style" )); //escapeCSS, BUG!
       img.title = escapeHTML(ele.attr("title" ));
+      img.alt   = escapeHTML(ele.attr("alt"   )) || img.title || img.class || img.src;
       img.width = escapeHTML(ele.attr("width" ));
       img.height= escapeHTML(ele.attr("height"));
       //debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
     });//each img of imgelements
     //^^^^^^^^^^^^^^^IMAGES^^^^^^^^^^^^^^^
     r.location = escapeHTML(trunc($(r.description).find(".location").text()));
-    if (r.location) { // Event // Event // Event 
-      r.type = "event";
+    r.fn  = escapeHTML(trunc($(r.description).find(".fn").text()));
+    r.type = "";
+    if (r.location) {                             // ----- type Event -----
+      //--- http://microformats.org/wiki/hcalendar
+      r.type += "event ";
       r.historical = 
         r.start.getTime() < +Date.now() + millisecondsBeforeHistorical;
       r.summary = trunc($(r.description).find(".summary").text())
-    } else { // Non-Event // Non-Event // Non-Event
-      r.type = ""; 
+    } else if (r.fn) {                            // ----- type Person -----
+      //--- http://microformats.org/wiki/hcard
+      r.type += "person ";
+      r.bday= escapeHTML(trunc($(r.description).find(".bday").text()));
+      r.n   = xsshtml(trunc($(r.description).find(".n").text()));
+      r.adr = xsshtml(trunc($(r.description).find(".adr").text()));
+      r.note= escapeHTML(trunc($(r.description).find(".note").text()));
+    } else {                                      // ----- type Story -----
+      r.type += "story ";
       r.summary = xsshtml(trunc(entry.content));
-    }
-    //--- http://microformats.org/wiki/hcard
-    r.fn  = escapeHTML(trunc($(r.description).find(".fn").text()));
-    r.url = escapeHTML(trunc($(r.description).find(".url").text()));
-    r.org = escapeHTML(trunc($(r.description).find(".org").text()));
-    r.tel = escapeHTML(trunc($(r.description).find(".tel").text()));
-    r.bday= escapeHTML(trunc($(r.description).find(".bday").text()));
-    r.note= escapeHTML(trunc($(r.description).find(".note").text()));
-    r.n   = xsshtml(trunc($(r.description).find(".n").text()));
-    r.adr = xsshtml(trunc($(r.description).find(".adr").text()));
-    //--- http://microformats.org/wiki/hcard
+    }//if type
+    r.url = escapeHTML(trunc($(r.description).find(".url").text()));//person,event
+    r.org = escapeHTML(trunc($(r.description).find(".org").text()));//person,event
+    r.tel = escapeHTML(trunc($(r.description).find(".tel").text()));//person,event
     r.subtitle = escapeHTML(trunc($(r.description).find(".subtitle").text()));
     r.description = viewProperty("description",r.content); //css hides
     return r;
   }//function modelEntry
 
 
-  var modelFeed = function(f,feed){
+  var modelFeed = function(f){
   //This function builds the model for a feed.
-    var quantity = feed.entries.length;
+    var quantity = payload[f].feed.entries.length;
     debug("» modelFeed #"+(f+1)+" has "+quantity+" entries");
     var type=""; //initialize the feed's type
     var e=0;
     entries[f] = [];
+
     for (e; e < quantity; e++) {
-      entries[f][e] = modelEntry(e,feed.entries[e]);    //model entry
-      entries[f][e].type && (type = entries[f][e].type);//feed inherits type
+      entries[f][e] = modelEntry(f,e);    //model entry
+      type = entries[f][e].type;  //feed type is last entry's type
     }//for entries
-    if ("reverse"===sortorder) {
-      if (type) entries[f].sort(byReversePubDate);
-      else entries[f].sort(byPubDate)
-    } else { //presumed: every other sortorder is default i.e. "forward"
-      if (type) entries[f].sort(byPubDate);
-      else entries[f].sort(byReversePubDate);
-    }
+
+    if ("shuffle"===sortorder) {        //---Shuffle Sort---
+      entries[f].sort(shuffle);
+      //////////
+    } else if ("reverse"===sortorder) { //---Reverse Sort---
+      if (type.indexOf("event")>=0)  entries[f].sort(byReversePubDate);
+      else                          entries[f].sort(byPubDate);
+      //////////
+    } else {                            //---Forward Sort---
+      if (type.indexOf("event")>=0)  entries[f].sort(byPubDate);
+      else                          entries[f].sort(byReversePubDate);
+      //////////
+    }//if sort
     return {
-      "feedUrl"     : escapeHTML(trunc(feed.feedUrl))
-      ,"title"      : escapeHTML(trunc(feed.title))
-      ,"author"     : escapeHTML(trunc(feed.author))
-      ,"description": escapeHTML(trunc(feed.description))
+      "feedUrl"     : escapeHTML(trunc(payload[f].feed.feedUrl))
+      ,"title"      : escapeHTML(trunc(payload[f].feed.title))
+      ,"author"     : escapeHTML(trunc(payload[f].feed.author))
+      ,"description": escapeHTML(trunc(payload[f].feed.description))
       ,"type"       : type
       ,"quantity"   : quantity
     };
@@ -462,23 +439,30 @@ define('tamufeed', ['jquery','google'], function($, google) {
   // Controller Functions
   // ====================
 
-  var controllerFeed = function(result,f) {
-  //This function controls model/view of one feed; it is called by putFeed.
-  //Enhance: subscribe to the pubsub "/feed/raw"
+  var controllerFeed = function(f) {
+  //This function controls model of one feed; it is called by putFeed.
+  //Pubsub: subscribe to "/feed/raw"
+  //This function controls view of all feeds; it calls view.
+  //Pubsub: subscribe to "/feed/json" publish "/feed/html"
     debug("» controllerFeed #"+(f+1));
-    if (result.error) return putDOM(element,
+    if (payload[f].error) {
+      debug("- result.error "+payload[f].error.code+": "+payload[f].error.message);
+      return putDOM(element.stage,
         t(feedTemplate,{
           "feedUrl" : "" 
           ,"entries": ""
-          ,"feedIndex"  :  "error"+result.error.code
-          ,"title"      : "Error "+result.error.code+": "+result.error.message
-          ,"description": "Error "+result.error.code+": "+result.error.message+" in feed #"+f
+          ,"feedIndex"  :  "error"+payload[f].error.code
+          ,"title"      : "Error "+payload[f].error.code+": "+payload[f].error.message
+          ,"description": "Error "+payload[f].error.code+": "+payload[f].error.message+" in feed #"+f
         })//t
-    );//return error
-    feed[f] = modelFeed(f,result.feed);
+      );//return error
+    }//if result.error
+    feed[f] = modelFeed(f);
+
+    //Control view
     if (!--feed.countdown) {  //When the countdown hits zero,
-      view();
-      entries = null; //forget all feeds metadata
+      view();                 //pubsub publish "/feed/html"
+      destroy();
     }//else if
   }//function controllerFeed
 
@@ -488,8 +472,8 @@ define('tamufeed', ['jquery','google'], function($, google) {
   //Pubsub: subscribe to "/request"
     feed.quantity = feed.countdown = feeduri.length;
     debug("» controller of request - for "+feed.quantity+" feeds");
-    //element.stage.attr("data-children",feed.quantity);
-    putDOM(element.stage,"","overwrite");
+    //element.stage.attr("data-children",feed.quantity); //no no.
+    putDOM(element.stage,"","overwrite");//clear the stage
     $.each(feeduri,function(f,feeduri){
       var servfeed = new service.Feed(feeduri); //new google.feeds.Feed(feeduri);
       //servfeed.includeHistoricalEntries();//TEST
@@ -508,27 +492,46 @@ define('tamufeed', ['jquery','google'], function($, google) {
   //This function initializes everything. 
   //Tightly coupled: calls the service loader.
     debug("» init");
-    if ("undefined"===typeof google) throw "Google API loader failure.";
+    if ("undefined"===typeof google) throw "FAIL! google.com/jsapi failed to load before tamufeed.js";
+    // Bind element from selector
+    element.stage = $(selector.stage);
     if (element.stage) 
       google.load("feeds","1",{"callback":putAPI,"nocss":true});
-    else debug("tamufeed.element.stage not found."); //fail silently if debugging
+    else debug("INFO: tamufeed.element.stage not found.");
   }//function init
 
+  var destroy = function() {
+  //This function is the opposite of init; it tears down everything built.
+    debug("» destroy");
+    payload = [];
+    element.stage = {};   //This is small
+    //service = undefined;  //This is small
+  }//function putAPI
+
   var putAPI = function() {
-  //This function is a callback of the service API.
+  //Callback of the service provider.
+  //This function puts the service API object. Then calls controller.
     debug("» putAPI");
-    if ("undefined"===typeof google.feeds) throw "Google Feeds API failure.";
+    if ("undefined"===typeof google.feeds) {
+      debug("CRIT: google.feeds failed to initialize.");
+      throw "google.feeds API failure";
+    }//if undefined google.feeds
     service = google.feeds;
-    //Enhance: broadcast the pubsub message name+"/request" here:
+    //Pubsub: publish name+"/request" here:
     controller(); //instead of tightly coupled to controller.
   }//function putAPI
 
   var putFeed = function(servresult,f) {
-  //This function is asynchronously-called as callback of service API instance.
-    debug("» putFeed");
-    if ("undefined"===typeof servresult) throw "Network API feed failure.";
-    //Enhance: broadcast the pubsub message name+"/feed/raw" here:
-    controllerFeed(servresult,f); //instead of tightly coupled to controllerFeed.
+  //Callback of the service feeds API.
+  //This function puts the service result. Then calls the feed controller.
+    debug("» putFeed #"+(f+1));
+    if ("undefined"===typeof servresult) {
+      debug("CRIT: google.feeds.load failed to return payload.");
+      throw "google.feeds.load service failure.";
+    }
+    payload[f] = servresult;
+    //Pubsub: publish name+"/feed/raw"
+    controllerFeed(f); //instead of tightly coupled to controllerFeed.
   }//function putFeed
 
   return {
@@ -537,4 +540,12 @@ define('tamufeed', ['jquery','google'], function($, google) {
   }
 
 /*****************************************************************************/
-});
+})(window,$,google); //IIFE
+
+
+// Expose tamufeed as an AMD module. 
+// A named AMD is safest & most robust way to register. 
+// Do this after creating the global.
+if ( typeof define === "function" && define.amd) {
+  define( "tamufeed", ['jquery','google'], function ($, google) { return tamufeed; } );
+};
