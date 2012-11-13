@@ -1,11 +1,11 @@
 <!doctype html>
 
-<!--[if lt IE 7]> <html class="ie6 oldie badie calendardemo" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="ie7 oldie badie calendardemo" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="ie8 oldie       calendardemo" lang="en"> <![endif]-->
-<!--[if IE 9]>    <html class="ie9             calendardemo" lang="en"> <![endif]-->
+<!--[if lt IE 7]> <html class="ie6 oldie badie demo" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie badie demo" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie       demo" lang="en"> <![endif]-->
+<!--[if IE 9]>    <html class="ie9             demo" lang="en"> <![endif]-->
 <!--[if gt IE 9]><!-->
-<html class="calendardemo" lang="en">
+<html class="demo" lang="en">
 <!--<![endif]-->
 
 <head>
@@ -20,15 +20,29 @@
   var tamufeed = {
     "selector": "#tamufeed"
     ,"debugging": true
+    //,"sort": "shuffle"
     ,"fetchEntries": 10
-    ,"wantEntries" :  5
+    ,"wantEntries" :  6
     ,"truncatedStringMaxLength": 480
     ,"minutesBeforeHistorical": 45
     ,"url": [
-      "http://codemaroon.tamu.edu/feed.xml"
-      ,"http://feeds.feedburner.com/AggieWebmasters"
+      "http://codemaroon.tamu.edu/feed.xml",
+      "http://calendar.tamu.edu/?calendar_id=37&upcoming=1&format=rss",
+      "http://feeds.feedburner.com/AggieWebmasters"
+/**
       ,"http://picasaweb.google.com/data/feed/base/all?alt=rss&kind=photo&access=public&tag=landscape&filter=1&imgmax=4&hl=en_US"
-    ]
+      ,"http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=tamuliberalarts"
+      ,"http://www.facebook.com/feeds/api_messages.php" //Facebook's Health
+      ,"http://feeds.feedburner.com/TAMUTrafficConstruction?format=xml"
+      ,"http://liberalarts.tamu.edu/feeds/collegenews.rss"
+      ,"http://academyarts.tamu.edu/feed/"
+      ,"http://gdata.youtube.com/feeds/api/users/TAMUliberalarts/uploads"
+      ,"http://calendar.tamu.edu/?calendar_id=73&upcoming&format=rss"  //Stark
+      ,"http://calendar.tamu.edu/?calendar_id=103&upcoming&format=rss" //Forsyth
+/**/
+    ]//^url
+
+/** //This configuration style is proposed but not yet implemented
     ,"feeds": [
       { "id": "tamucodemaroon"
         ,"url": "http://codemaroon.tamu.edu/feed.xml"
@@ -44,20 +58,22 @@
         ,"truncatedStringMaxLength": 300
         ,"minutesBeforeHistorical": 30
       }//^tamucllacal 
-    ]//^feeds 
-  }//^tamufeed configuration 
+    ]//^feeds
+/**/
+}//^tamufeed configuration 
 
   //Require.js configuration 
   var require = {
     "enforceDefine" : true  //You can turn this off when loading non-AMD libs.
-    ,"baseUrl"      : "."   //Set this path to place where your JS app resides.
+    ,"baseUrl"      : "."   //Set this path /to/place/where/ your JS app resides.
     ,"waitSeconds"  : 4     //Tighter timeout than default 7 seconds
-    //,"deps"         : ["tamufeed"]  //Unnecessary because main.js deps
-    //,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing
+    ,"deps"         : ["tamufeed"]
+//  ,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing
     ,"paths": {
       "jquery": [
         "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min"
         ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min"
+        ,"http://ajax.tamu.edu/ajax/libs/jquery/1.8.1/jquery.min"
         ,"http://cdnjs.cloudflare.com/ajax/libs/zepto/1.0rc1/zepto.min"
       ]
       ,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here
@@ -71,19 +87,19 @@
     ,"shim": {
       "google"        : { exports: "google"}
       ,"underscore"   : { exports: "_"}
-      ,"underscorestr": { exports: "_", deps: ["underscore" ]}
+      ,"underscorestr": { exports: "_",        deps: ["underscore" ]}
       ,"Backbone"     : { exports: "Backbone", deps: ["underscore" ]}
-      ,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery", "underscorestr" ]}
+      ,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery" ]}
     }//^shim 
   }//^require 
 </script>
 <script data-main="main.js" src="http://cdnjs.cloudflare.com/ajax/libs/require.js/2.0.6/require.min.js"></script>
 
-  <link href="./normalize.css" rel="stylesheet" type="text/css" charset="utf-8" data-doc="http://necolas.github.com/normalize.css/">
+  <link href="./normalize.css" rel="stylesheet" type="text/css" charset="utf-8"
+    data-doc="http://necolas.github.com/normalize.css/"/>
   <link href="./styles.css" rel="stylesheet" type="text/css" charset="utf-8" charset="utf-8"/>
 
   <title>demonstration</title>
-  <meta name="description" content="Demonstration of tamufeed.js, async">
   <meta name="author" content="Monty Dickerson">
 
 </head>
@@ -95,7 +111,7 @@
 </p>
 
 <!-- -------------------------------------------------------------------- -->
-<script type="text/html" id="calendardayTemplate" charset="utf-8">
+<script type="text/html" id="dateBlockTemplate" charset="utf-8">
 <span class="month">{{M}}</span><span class="dayOfMonth">{{j}}</span>
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
@@ -134,7 +150,7 @@
 <div class="item entry {{tags}} {{attributes}}"
   data-index="{{index}}" data-peers="{{quantity}}">
 <div class="feature">
-  {{calendarday}}
+  {{dateBlock}}
   <h3><a href="{{link}}" class="entry-title title">{{title}}</a></h3>
   {{subtitle}}
 </div><div style="clear:left;"></div>
