@@ -193,9 +193,9 @@ your own CSS.
 
 When assigning class names on markup elements, we conform to these.
 
-* Events, [hCalendar](http://microformats.org/wiki/hcalendar
-* Persons, [hCard](http://microformats.org/wiki/hcard
-* Stories, [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287
+* Events, [hCalendar](http://microformats.org/wiki/hcalendar)
+* Persons, [hCard](http://microformats.org/wiki/hcard)
+* Stories, [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
 
 ### For Programmers
 
