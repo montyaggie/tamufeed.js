@@ -76,11 +76,25 @@ These parameters are set in the `tamufeed` object.
 * `minutesBeforeHistorical` sets slack once dtstart has elapsed before event is labelled historical (default 30)
 * `debugging` turns on the F12 console debug messages
 
-## Synchronous Integration
+## How to use
+
+There are two ways to integrate tamufeed.js into your web page or CMS theme.
+
+1. Easy (synchronous)
+2. High Performance (asynchronous)
+
+If you're integrating it into a very simple or static web page, the easy 
+option is great for you.  And, if your CMS does does not yet have
+support for asynchronous script loading (like Drupal), or does not really take
+advantage of the high performance of an asynchronous loader (like WordPress),
+take the easy road, too!  But, if you have web applications which use some
+client-side logic, you'll benefit from the high performance path.
+
+### Easy Integration
 
 To integrate this software onto a web page (the old synchronous way), 
 you basically need to add four things in your HTML.
-Let the demo `synchronous.html` be your guide!
+Let the demo `synchronous.html` be your guide.
 
 1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
 2. The prerequisite jQuery & Google JS API script tags, and this script. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom.
@@ -121,22 +135,21 @@ of your own HTML. You'll see conditionals there that test that you got the
 dependencies and script loaded; you can leave those in without any material
 performance hit. Or you can remove them after your successful integration.
 
-## Asynchronous script option
+### High Performance integration
 
-Async JS loading reduces page load time, because it lets scripts load 
-in parallel (instead of serially); this boosts web performance.
-[Here's](http://css-tricks.com/thinking-async/)
-[why](http://requirejs.org/docs/why.html) async *is* best practice
-(c.f.
-[@souders](http://twitter.com/souders),
-[video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html),
-[blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/)).
-If you're unfamiliar with asynchronous loaders, you should 
-read the basics of
-[using require.js](http://requirejs.org/).
+Loading JavaScript software asynchronously speeds your page load performance
+because it lets scripts load in parallel (instead of serially).
+Is async the best practice for high performance?
 
-The `async.html` example is intuitive, and easy to follow: once you understand
-using an asynchronous script loader.
+* Says css-tricks: [blog](http://css-tricks.com/thinking-async/)
+* Says [@souders](http://twitter.com/souders): [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html) | [blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/))
+
+If you're unfamiliar with asynchronous loaders, you should definitely educate
+yourself first. Read the basics of [require.js](http://requirejs.org/)
+et. al. And learn by example: we provide a straight forward, working demo
+for you to kick the tires and learn from.  The `async.html` demo is intuitive
+and easy to follow once you understand at little about
+[AMD](http://requirejs.org/docs/why.html).
 
 ## Markup
 
