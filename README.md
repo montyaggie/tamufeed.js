@@ -202,13 +202,13 @@ When assigning class names on markup elements, we conform to these.
 Recommended naming conventions for types of entries
 
 * Events
-   * [hCalendar](http://microformats.org/wiki/hcalendar
+   * [hCalendar](http://microformats.org/wiki/hcalendar)
    * http://schema.org/Event
 * Persons
-    * [hCard](http://microformats.org/wiki/hcard
+    * [hCard](http://microformats.org/wiki/hcard)
     * http://schema.org/Person
 * Stories
-    * [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287
+    * [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
     * http://schema.org/Article
 * Books
     * http://schema.org/Book
