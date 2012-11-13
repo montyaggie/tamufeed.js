@@ -6,7 +6,7 @@ This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
 
 For your first use, click on [tags](/montyaggie/tamufeed.js/tags)
 and download the latest version e.g.
-[0.1.2](/montyaggie/tamufeed.js/archive/0.1.3.zip).
+[0.1.3](/montyaggie/tamufeed.js/archive/0.1.3.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser.
 
