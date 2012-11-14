@@ -18,7 +18,7 @@ appearance it takes is up to you.
 
 To download, click on [tags](/montyaggie/tamufeed.js/tags)
 and grab the latest zip e.g.
-[0.1.3](/montyaggie/tamufeed.js/archive/0.1.3.zip).
+[0.1.4](/montyaggie/tamufeed.js/archive/0.1.4.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser. (You can turn it off again when you're 
 ready to deploy your work.)
