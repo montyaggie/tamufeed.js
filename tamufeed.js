@@ -8,7 +8,7 @@ var tamufeed = (function(window, $, google, undefined) {
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.3';
+  var VERSION = '0.1.4alpha';
 
   // Stores
   // -------------
@@ -303,8 +303,9 @@ var tamufeed = (function(window, $, google, undefined) {
   //This function builds the view for all feeds, synchronously.
   //Pubsub: subscribes feed/html, publishes callername/html
     debug("» View response");
-    $.each(feeduri,function(f,feeduri){ 
+    $.each(feeduri, function(f,feeduri) { 
       putDOM(element.stage,t(feedTemplate,viewFeed(f)));
+      element.stage.attr("data-tamufeed",VERSION);               //leave a mark
     });
   }//function view
 
@@ -470,17 +471,22 @@ var tamufeed = (function(window, $, google, undefined) {
   var controller = function() {
   //This function controls tamufeed. Multifeed controller called by putAPI.
   //Pubsub: subscribe to "/request"
-    feed.quantity = feed.countdown = feeduri.length;
+    if (feed.quantity) feed.countdown = feed.quantity;    //if deja vu, reset countdown
+    else feed.quantity = feed.countdown = feeduri.length; //else init everything
     debug("» controller of request - for "+feed.quantity+" feeds");
     //element.stage.attr("data-children",feed.quantity); //no no.
     putDOM(element.stage,"","overwrite");//clear the stage
     $.each(feeduri,function(f,feeduri){
-      var servfeed = new service.Feed(feeduri); //new google.feeds.Feed(feeduri);
-      //servfeed.includeHistoricalEntries();//TEST
-      servfeed.setNumEntries(fetchEntries);
-      servfeed.load( //Call with Asynchronous Callback
-        function(servresult){ putFeed(servresult,f);}
-      );
+      if ("undefined"!==typeof payload[f] && "undefined"!==typeof payload[f].error) 
+        controllerFeed(f);  //if deja vu, skip
+      else {                                            //else, load.
+        var servfeed = new service.Feed(feeduri); //new google.feeds.Feed(feeduri);
+        //servfeed.includeHistoricalEntries();//TEST
+        servfeed.setNumEntries(fetchEntries);
+        servfeed.load( //Call with Asynchronous Callback
+          function(servresult){ putFeed(servresult,f);}
+        );
+      }//else
     });//each feed
   }//function controller
 
@@ -495,6 +501,8 @@ var tamufeed = (function(window, $, google, undefined) {
     if ("undefined"===typeof google) throw "FAIL! google.com/jsapi failed to load before tamufeed.js";
     // Bind element from selector
     element.stage = $(selector.stage);
+    if ("undefined"!==typeof google.feeds)  //if already initialized,
+      putAPI();                             //then call putAPI now.
     if (element.stage) 
       google.load("feeds","1",{"callback":putAPI,"nocss":true});
     else debug("INFO: tamufeed.element.stage not found.");
