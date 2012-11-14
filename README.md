@@ -1,7 +1,7 @@
 # tamufeed.js
 
-The versatile, robust JavaScript library for showing
-feeds of items on your web page
+the versatile JavaScript library for showing
+feeds on your web page
 
 ## What's it good for?
 
@@ -68,7 +68,7 @@ when the document object model is ready.
 Then it pulls feeds, models data, sorts entries, and
 prints a view into the stage element on the page.
 
-## Feed Types
+## Feed types
 
 We retrieve news feeds from Google, recognizing
 [microformats](http://microformats.org/), such as calendar items,
@@ -198,7 +198,7 @@ in the example):
 Their variables, where the script injects its content,
 are always delimited by mustache/handlebar characters like this: 
 `{{LookMaImaVariable}}`. Note that they are case sensitive
-(i.e. capitalization does matter and must be precisely the same).
+(capitalization does matter, and must always match precisely).
 The meaning of the variables should be fairly intuitive when you see
 how they're used in demo.
 
@@ -225,6 +225,39 @@ These work should be working fine:
     {{g}} is hour (0-12)
     {{a}} is am or pm
     {{U}} is seconds since the Unix Epoch (1970 January 1st)
+
+### entryTemplate variables
+
+    {{title}}       is the title of the story or event
+    {{link}}        is the hyperlink URL for the full story/details
+    {{linkencoded}} is the same hyperlink but encoded for use as a URL parameter
+    {{description}} is the entry description
+    {{index}}       is the sequential number of the entry in the count
+    {{quantity}}    is the sum of entries counted
+    {{attributes}}  is attributes of the entry for use in an HTML class attribute, e.g. even or odd
+    {{pubDate}}     is the published date of the entry
+    {{author}}      is the author of the story
+    {{dtstart}}     is the starting time of the event (all events have one)
+    {{dtend}}       is the ending time of the event (may be blank)
+    {{date}}        is the day of the event
+    {{dateBlock}}   is the dateBlock template, filled in
+    {{time}}        is the whole time (date, dtstart, dtend) of the event
+    {{subtitle}}    is the subtitle of the story or event
+    {{summary}}     is the summary of the story or event
+    {{location}}    is the location of the event
+
+### feedTemplate variables
+
+    {{feedIndex}}    is the feed# in the count for use in class attribute
+    {{attributes}}   is the attributes of the feed, such as its type and even/odd
+    {{index}}        is the number of this feed in the count
+    {{feedQuantity}} is the sum of feeds counted
+    {{quantity}}     is the count of entries this feed contains
+    {{entries}}      is the entryTemplate filled in
+    {{feedUrl}}      is the URL of this feed
+    {{title}}        is the feed's title
+    {{author}}       is the author of the feed i.e. its curator's name, if any
+    {{description}}  is the description of the feed
 
 ## Style
 
@@ -259,7 +292,8 @@ http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
 
 ## About Texas A&M University
 
-Texas A&M University is dedicated to the discovery, development, communication,
+[Texas A&M University](http://www.tamu.edu/about/)
+is dedicated to the discovery, development, communication,
 and application of knowledge in a wide range of academic and professional
 fields. Its mission of providing the highest quality undergraduate
 and graduate programs is inseparable from its mission of developing new
@@ -272,9 +306,9 @@ geographic groups, women and men alike, as it addresses the needs of an
 increasingly diverse population and a global economy. In the twenty-first
 century, Texas A&M University seeks to assume a place of preeminence among
 public universities while respecting its history and traditions.
-([more...](http://www.tamu.edu/about/))
 
-Information on the Texas A&M's calendar can be found online on its
+Information on the Texas A&M's [calendar](http://calendar.tamu.edu/)
+can be found online on its
 [help page](http://marcomm.tamu.edu/web/calendar/help.html),
 on the [Texas A&M Webmaster blog](http://webmaster.tamu.edu/category/calendar/),
 through the [email list](http://marcomm.tamu.edu/web/calendar/documentation.html#listserv),
