@@ -1,18 +1,27 @@
 # tamufeed.js
 
-This browser-side software is for showing feeds from `calendar.tamu.edu` et. al.
+The versatile, robust JavaScript library for showing
+feeds of items on your web page
+
+## What's it good for?
+
+The most common use case is for displaying event-type feeds, from a Texas A&M
+calendar, on a web page. And you can use it for displaying news feeds, too.
+This app empowers you to customize its design as you like it, so the form of
+appearance it takes is up to you.
 
 ## Getting Started
 
-For your first use, click on [tags](/montyaggie/tamufeed.js/tags)
-and download the latest version e.g.
+To download, click on [tags](/montyaggie/tamufeed.js/tags)
+and grab the latest zip e.g.
 [0.1.3](/montyaggie/tamufeed.js/archive/0.1.3.zip).
 For your first run, we recommend turning on debugging and watching the
-F12 console in your browser.
+F12 console in your browser. (You can turn it off again when you're 
+ready to deploy your work.)
 
-## Demonstration
+## Demo
 
-* [Check out a live demo.](http://cllacdn.tamu.edu/calendar/)
+* [Check it out! live.](http://cllacdn.tamu.edu/calendar/)
 
 ## License
 
@@ -56,14 +65,14 @@ and pass it as the `key=` URL parameter when you load the `www.google.com/jsapi`
 
 tamufeed.js works by initializing service connection,
 when the document object model is ready.
-Then it pulls feeds, models data, sorts entries &
-puts a view into the stage element on the page.
+Then it pulls feeds, models data, sorts entries, and
+prints a view into the stage element on the page.
 
 ## Feed Types
 
 We retrieve news feeds from Google, recognizing
-[microformats](http://microformats.org/) such as calendar items
-in every entry's `content` part.
+[microformats](http://microformats.org/), such as calendar items,
+in every entry's `content`.
 
 ## How to use
 
@@ -76,7 +85,7 @@ If you're integrating it into a very simple or static web page, the easy
 option is great for you.  And, if your CMS does does not yet have
 support for asynchronous script loading (like Drupal), or does not really take
 advantage of the high performance of an asynchronous loader (like WordPress),
-take the easy road, too!  But, if you have web applications which use some
+take the easy road.  But, if your web applications use some
 client-side logic, you'll benefit from the high performance path.
 
 ### Easy Integration
@@ -115,9 +124,16 @@ Here is an example of #3:
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
-of your own HTML's body. You'll see conditionals there that test that you got the 
-dependencies and script loaded—you can leave those in without any material
-performance hit. Or you can remove them after your successful integration.
+of your own HTML's body. It has four lines. Three lines test that you've got all
+scripts loaded, and the last line tells tamufeed to initialize when
+[document.ready](http://api.jquery.com/ready/). It looks like this:
+
+    <script>
+    if ("undefined"===typeof $) alert("jQuery was not loaded.");
+    if ("undefined"===typeof google) alert("Google JS API was not loaded.");
+    if ("undefined"===typeof tamufeed) alert("tamufeed.js was not loaded.");
+    else $(function() { tamufeed.init(); });
+    </script>
 
 When you've got things running, remove your reliance on the files, styles &
 graphics hosted on *our* demo [server](http://cllacdn.tamu.edu/html/home.html).
@@ -130,13 +146,13 @@ Loading JavaScript software asynchronously speeds your page load performance
 because it lets scripts load in parallel (instead of serially).
 Is async the best practice for high performance?
 
-* Says css-tricks: [blog](http://css-tricks.com/thinking-async/)
-* Says [@souders](http://twitter.com/souders): [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html) | [blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/))
+* Per css-tricks: [blog](http://css-tricks.com/thinking-async/)
+* Per [@souders](http://twitter.com/souders): [video](http://radar.oreilly.com/2012/04/velocity-podcast-series-p1.html), [blog](http://www.stevesouders.com/blog/2010/05/07/wpo-web-performance-optimization/)
 
 If you're unfamiliar with asynchronous loaders, you should definitely educate
-yourself first. Read the basics of [require.js](http://requirejs.org/)
-et. al. And learn by example: we provide a straight forward, working demo
-for you to kick the tires and learn from.  The `async.html` demo is intuitive
+yourself first. Read the basics of [require.js](http://requirejs.org/),
+et. al. Then learn by example: we provide a straight forward, working demo
+for you to kick the tires and learn from.  Our `async.html` demo is intuitive,
 and easy to follow once you understand at little about
 [AMD](http://requirejs.org/docs/why.html).
 
@@ -147,9 +163,10 @@ want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
 
 ## Configuration
 
-These parameters are set in the `tamufeed` object.
+These parameters are set in the `tamufeed` object
+(in [JSON](http://www.json.org/) format).
 
-* `url` feed address
+* `url` feed address; this can be one string for your RSS. Or an array of strings, for several.
 * `selector` the CSS selector that locates your stage element uniquely
 * `sort` sorts entries
     * `"forward"` sorts entries descending, but events ascending
@@ -163,12 +180,9 @@ These parameters are set in the `tamufeed` object.
 
 ## Templates
 
-We the integrator to customize the HTML output via templates, that you
-host in your markup. Their variables, where the script injects its content,
-are always delimited by mustache/handlebar characters like this: 
-`{{LookMaImaVariable}}`.
-The meaning of the variables should be fairly intuitive, 
-from how they are used by the demo.
+The software allows the integrator to customize the HTML output via templates
+that you host in your HTML. You need to provide these templates (as demonstrated
+in the example):
 
 * `feedTemplate` governs what feeds will be marked up with
 * `entryTemplate` controls the display of entries (of all types)
@@ -177,12 +191,38 @@ from how they are used by the demo.
 * `encasedTemplate` is used to encase any HTML value that could possibly be malformed
 * `dateBlockTemplate` decides how `{{dateBlock}}` comes out
 
+### Template Variables
+
+Their variables, where the script injects its content,
+are always delimited by mustache/handlebar characters like this: 
+`{{LookMaImaVariable}}`. Note that they are case sensitive
+(i.e. capitalization does matter and must be precisely the same).
+The meaning of the variables should be fairly intuitive when you see
+how they're used in demo.
+
 ### Template Date Variables
 
 The single-letter variables used with dates is an incomplete subset of
 [function.date.php](http://www.php.net/manual/en/function.date.php).
 If you encounter one that you would like to use that isn't yet implemented,
 [just create an issue](/montyaggie/tamufeed.js/issues/new) and we'll add it.
+These work should be working fine:
+
+    `{{w}}` day of the week (0-6 for Sun-Sat)
+    `{{S}}` English ordinal suffix for day ["st","nd","rd","th"]
+    `{{j}}` day of the month (1-31)
+    `{{d}}` day of the month (01-31) with leading zeros
+    `{{D}}` day of the month e.g. Mon or Tue
+    `{{l}}` day of the month e.g. Monday or Tuesday
+    `{{n}}` month (1-12)
+    `{{m}}` month (01-12)
+    `{{M}}` month, short textual representation, three letters
+    `{{F}}` month, full textual representation e.g. January
+    `{{Y}}` year (4 digits for 4-digit years) 
+    `{{i}}` minutes (00-59) with leading zeros
+    `{{g}}` hour (0-12)
+    `{{a}}` am or pm
+    `{{U}}` Seconds since the Unix Epoch (January 1 1970)
 
 ## Style
 
@@ -192,42 +232,38 @@ help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
 
-## Schema & Microformats
+## Naming things
 
-### For Designers
-
-When assigning class names on markup elements, we conform to these.
+When assigning class names on markup elements, 
+we conform to these standards.
 
 * For Events, [hCalendar](http://microformats.org/wiki/hcalendar).
 * For Persons, [hCard](http://microformats.org/wiki/hcard).
-* For Stories, [RFC4287](http://tools.ietf.org/html/rfc4287).
+* For Stories, [hAtom](http://microformats.org/wiki/hatom) or [RSS](http://cyber.law.harvard.edu/rss/rss.html).
 
-### For Programmers
-
-Recommended naming conventions for types of entries
-
-* Events
-   * [hCalendar](http://microformats.org/wiki/hcalendar)
-   * http://schema.org/Event
-* Persons
-    * [hCard](http://microformats.org/wiki/hcard)
-    * http://schema.org/Person
-* Stories
-    * [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
-    * http://schema.org/Article
-* Books
-    * http://schema.org/Book
-* Apps
-    * http://schema.org/SoftwareApplication
-* Schools
-    * http://schema.org/EducationalOrganization
-
-## Developer Links
+## For Programmers
 
 * [Google Feeds API's result object structure](https://developers.google.com/feed/v1/jsondevguide#resultJson)
 * The Texas A&M University's calendar software on the server side is
 [UNL Event Publisher](http://events.unl.edu/) documented at
 http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
+* Recommended naming conventions
+  * Events
+     * [hCalendar](http://microformats.org/wiki/hcalendar)
+     * http://schema.org/Event
+  * Persons
+      * [hCard](http://microformats.org/wiki/hcard)
+      * http://schema.org/Person
+  * Stories
+      * [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
+      * http://schema.org/Article
+  * Books
+      * http://schema.org/Book
+  * Apps
+      * http://schema.org/SoftwareApplication
+  * Schools
+      * http://schema.org/EducationalOrganization
+
 
 ## TAMU Support
 
