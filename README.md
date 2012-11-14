@@ -202,7 +202,40 @@ are always delimited by mustache/handlebar characters like this:
 The meaning of the variables should be fairly intuitive when you see
 how they're used in demo.
 
-### Template Date Variables
+### feedTemplate variables
+
+    {{feedIndex}}    is the feed# in the count for use in class attribute
+    {{attributes}}   is the attributes of the feed, such as its type and even/odd
+    {{index}}        is the number of this feed in the count
+    {{feedQuantity}} is the sum of feeds counted
+    {{quantity}}     is the count of entries this feed contains
+    {{entries}}      is the entryTemplate filled in
+    {{feedUrl}}      is the URL of this feed
+    {{title}}        is the feed's title
+    {{author}}       is the author of the feed i.e. its curator's name, if any
+    {{description}}  is the description of the feed
+
+### entryTemplate variables
+
+    {{title}}       is the title of the story or event
+    {{link}}        is the hyperlink URL for the full story/details
+    {{linkencoded}} is the same hyperlink but encoded for use as a URL parameter
+    {{description}} is the entry description
+    {{index}}       is the sequential number of the entry in the count
+    {{quantity}}    is the sum of entries counted
+    {{attributes}}  is attributes of the entry for use in an HTML class attribute, e.g. even or odd
+    {{pubDate}}     is the published date of the entry
+    {{author}}      is the author of the story
+    {{dtstart}}     is the starting time of the event (all events have one)
+    {{dtend}}       is the ending time of the event (may be blank)
+    {{date}}        is the day of the event
+    {{dateBlock}}   is the dateBlock template, filled in
+    {{time}}        is the whole time (date, dtstart, dtend) of the event
+    {{subtitle}}    is the subtitle of the story or event
+    {{summary}}     is the summary of the story or event
+    {{location}}    is the location of the event
+
+### dateTemplate Variables
 
 The single-letter variables used with dates is an incomplete subset of
 [function.date.php](http://www.php.net/manual/en/function.date.php).
@@ -225,39 +258,6 @@ These work should be working fine:
     {{g}} is hour (0-12)
     {{a}} is am or pm
     {{U}} is seconds since the Unix Epoch (1970 January 1st)
-
-### entryTemplate variables
-
-    {{title}}       is the title of the story or event
-    {{link}}        is the hyperlink URL for the full story/details
-    {{linkencoded}} is the same hyperlink but encoded for use as a URL parameter
-    {{description}} is the entry description
-    {{index}}       is the sequential number of the entry in the count
-    {{quantity}}    is the sum of entries counted
-    {{attributes}}  is attributes of the entry for use in an HTML class attribute, e.g. even or odd
-    {{pubDate}}     is the published date of the entry
-    {{author}}      is the author of the story
-    {{dtstart}}     is the starting time of the event (all events have one)
-    {{dtend}}       is the ending time of the event (may be blank)
-    {{date}}        is the day of the event
-    {{dateBlock}}   is the dateBlock template, filled in
-    {{time}}        is the whole time (date, dtstart, dtend) of the event
-    {{subtitle}}    is the subtitle of the story or event
-    {{summary}}     is the summary of the story or event
-    {{location}}    is the location of the event
-
-### feedTemplate variables
-
-    {{feedIndex}}    is the feed# in the count for use in class attribute
-    {{attributes}}   is the attributes of the feed, such as its type and even/odd
-    {{index}}        is the number of this feed in the count
-    {{feedQuantity}} is the sum of feeds counted
-    {{quantity}}     is the count of entries this feed contains
-    {{entries}}      is the entryTemplate filled in
-    {{feedUrl}}      is the URL of this feed
-    {{title}}        is the feed's title
-    {{author}}       is the author of the feed i.e. its curator's name, if any
-    {{description}}  is the description of the feed
 
 ## Style
 
@@ -283,9 +283,9 @@ we conform to these standards.
 [UNL Event Publisher](http://events.unl.edu/) documented at
 http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
 * Recommended naming conventions for
-    * [Events](http://schema.org/Event) [hCalendar](http://microformats.org/wiki/hcalendar)
-    * [Persons](http://schema.org/Person) [hCard](http://microformats.org/wiki/hcard)
-    * [Stories](http://schema.org/Article) [Atom syndication format = RFC4287](http://tools.ietf.org/html/rfc4287)
+    * [Events](http://schema.org/Event): [hCalendar](http://microformats.org/wiki/hcalendar)
+    * [Persons](http://schema.org/Person): [hCard](http://microformats.org/wiki/hcard)
+    * [Stories](http://schema.org/Article): [Atom syndication format = RFC4287](http://tools.ietf.org/html/rfc4287)
     * [Books](http://schema.org/Book)
     * [Apps](http://schema.org/SoftwareApplication)
     * [Schools](http://schema.org/EducationalOrganization)
