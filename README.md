@@ -94,7 +94,7 @@ To integrate this software onto a web page (the old synchronous way),
 you basically need to add four things in your HTML.
 Let the demo `synchronous.html` be your guide.
 
-1. The configuration script block, which configures parameters like your feed's address. Put it in the &lt;HEAD&gt; of the document.
+1. The configuration script block, which configures parameters like your feed's address. Put it in the `&lt;HEAD&gt;` of the document.
 2. The text/html script elements, which are the output templates for this script. You can put them almost anywhere.
 3. The prerequisite jQuery & Google.com/jsapi script tags and then tamufeed.js. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom (but above #4).
 4. And finally, copy the bottom-most inline script block in the demo's HTML
@@ -124,9 +124,10 @@ Here is an example of #3:
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
-of your own HTML's body. It has four lines. Three lines test that you've got all
-scripts loaded, and the last line tells tamufeed to initialize when
-[document.ready](http://api.jquery.com/ready/). It looks like this:
+of your own HTML's body. It has four lines. Three lines test that global exports
+of scripts which should be loaded exist, and the last line tells tamufeed to
+initialize when [document.ready](http://api.jquery.com/ready/) happens.
+It looks like this:
 
     <script>
     if ("undefined"===typeof $) alert("jQuery was not loaded.");
@@ -137,7 +138,7 @@ scripts loaded, and the last line tells tamufeed to initialize when
 
 When you've got things running, remove your reliance on the files, styles &
 graphics hosted on *our* demo [server](http://cllacdn.tamu.edu/html/home.html).
-Do not use our bandwidth. Thanks for using **your own web server** for hosting 
+**Do not use our bandwidth.** Thanks for using your own web server for hosting 
 your copy of social media icons, JavaScripts, et cetera.
 
 ### High Performance integration
@@ -164,7 +165,8 @@ want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
 ## Configuration
 
 These parameters are set in the `tamufeed` object
-(in [JSON](http://www.json.org/) format).
+in the `&lt;HEAD&gt;` of the HTML document
+(use [JSON](http://www.json.org/) format).
 
 * `url` feed address; this can be one string for your RSS. Or an array of strings, for several.
 * `selector` the CSS selector that locates your stage element uniquely
@@ -208,21 +210,21 @@ If you encounter one that you would like to use that isn't yet implemented,
 [just create an issue](/montyaggie/tamufeed.js/issues/new) and we'll add it.
 These work should be working fine:
 
-    `{{w}}` day of the week (0-6 for Sun-Sat)
-    `{{S}}` English ordinal suffix for day ["st","nd","rd","th"]
-    `{{j}}` day of the month (1-31)
-    `{{d}}` day of the month (01-31) with leading zeros
-    `{{D}}` day of the month e.g. Mon or Tue
-    `{{l}}` day of the month e.g. Monday or Tuesday
-    `{{n}}` month (1-12)
-    `{{m}}` month (01-12)
-    `{{M}}` month, short textual representation, three letters
-    `{{F}}` month, full textual representation e.g. January
-    `{{Y}}` year (4 digits for 4-digit years) 
-    `{{i}}` minutes (00-59) with leading zeros
-    `{{g}}` hour (0-12)
-    `{{a}}` am or pm
-    `{{U}}` Seconds since the Unix Epoch (January 1 1970)
+    {{w}} is day of the week (0-6 for Sun-Sat)
+    {{S}} is English ordinal suffix for day ["st","nd","rd","th"]
+    {{j}} is day of the month (1-31)
+    {{d}} is day of the month (01-31) with leading zeros
+    {{D}} is day of the month e.g. Mon or Tue
+    {{l}} is day of the month e.g. Monday or Tuesday
+    {{n}} is month (1-12)
+    {{m}} is month (01-12)
+    {{M}} is month, short textual representation, three letters
+    {{F}} is month, full textual representation e.g. January
+    {{Y}} is year (4 digits for 4-digit years) 
+    {{i}} is minutes (00-59) with leading zeros
+    {{g}} is hour (0-12)
+    {{a}} is am or pm
+    {{U}} is seconds since the Unix Epoch (1970 January 1st)
 
 ## Style
 
@@ -247,25 +249,30 @@ we conform to these standards.
 * The Texas A&M University's calendar software on the server side is
 [UNL Event Publisher](http://events.unl.edu/) documented at
 http://code.google.com/p/unl-event-publisher/wiki/UNL_UCBCN_Frontend
-* Recommended naming conventions
-  * Events
-     * [hCalendar](http://microformats.org/wiki/hcalendar)
-     * http://schema.org/Event
-  * Persons
-      * [hCard](http://microformats.org/wiki/hcard)
-      * http://schema.org/Person
-  * Stories
-      * [Atom syndication format RFC4287](http://tools.ietf.org/html/rfc4287)
-      * http://schema.org/Article
-  * Books
-      * http://schema.org/Book
-  * Apps
-      * http://schema.org/SoftwareApplication
-  * Schools
-      * http://schema.org/EducationalOrganization
+* Recommended naming conventions for
+    * [Events](http://schema.org/Event) [hCalendar](http://microformats.org/wiki/hcalendar)
+    * [Persons](http://schema.org/Person) [hCard](http://microformats.org/wiki/hcard)
+    * [Stories](http://schema.org/Article) [Atom syndication format = RFC4287](http://tools.ietf.org/html/rfc4287)
+    * [Books](http://schema.org/Book)
+    * [Apps](http://schema.org/SoftwareApplication)
+    * [Schools](http://schema.org/EducationalOrganization)
 
+## About Texas A&M University
 
-## TAMU Support
+Texas A&M University is dedicated to the discovery, development, communication,
+and application of knowledge in a wide range of academic and professional
+fields. Its mission of providing the highest quality undergraduate
+and graduate programs is inseparable from its mission of developing new
+understandings through research and creativity. It prepares students
+to assume roles in leadership, responsibility, and service to society.
+Texas A&M assumes as its historic trust the maintenance of freedom of inquiry
+and an intellectual environment nurturing the human mind and spirit.
+It welcomes and seeks to serve persons of all racial, ethnic, and
+geographic groups, women and men alike, as it addresses the needs of an
+increasingly diverse population and a global economy. In the twenty-first
+century, Texas A&M University seeks to assume a place of preeminence among
+public universities while respecting its history and traditions.
+([more...](http://www.tamu.edu/about/))
 
 Information on the Texas A&M's calendar can be found online on its
 [help page](http://marcomm.tamu.edu/web/calendar/help.html),
