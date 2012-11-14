@@ -1,7 +1,11 @@
 # tamufeed.js
 
-the versatile JavaScript library for showing
-feeds on your web page
+The versatile 
+[JavaScript](https://developer.mozilla.org/en-US/docs/JavaScript)
+[library](http://en.wikipedia.org/wiki/JavaScript_library)
+for printing
+[feeds](http://en.wikipedia.org/wiki/Web_feed)
+on your web page
 
 ## What's it good for?
 
