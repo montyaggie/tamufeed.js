@@ -8,7 +8,7 @@ var tamufeed = (function(window, $, google, undefined) {
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.4alpha';
+  var VERSION = '0.1.4';
 
   // Stores
   // -------------
