@@ -42,6 +42,15 @@ var tamufeed = (function(window, $, google, undefined) {
   // Date.now
   Date.valueOf = Date.now = Date.now || function() { return +new Date; };
 
+  //whattheheadsaid.com/2011/04/internet-explorer-9s-problematic-console-object 
+  if (console && typeof console.log == "object" && Function.prototype.bind) {
+    [
+      "log","info","warn","error","assert","dir","clear","profile","profileEnd"
+    ].forEach(function (method) {
+      console[method] = this.call(console[method], console);
+    }, Function.prototype.bind);
+  }//whattheheadsaid.com/2011/04/internet-explorer-9s-problematic-console-object
+
   // console
   if ("undefined"===typeof console)
     console = (function(){ z = function(){}; return { 
