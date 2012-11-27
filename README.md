@@ -18,14 +18,14 @@ appearance it takes is up to you.
 
 To download, click on [tags](/montyaggie/tamufeed.js/tags)
 and grab the latest zip e.g.
-[0.1.4](/montyaggie/tamufeed.js/archive/0.1.4.zip).
+[0.1.5](/montyaggie/tamufeed.js/archive/0.1.5.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser. (You can turn it off again when you're 
 ready to deploy your work.)
 
-## Demo
+## Check it out
 
-* [Check it out! live.](http://cllacdn.tamu.edu/calendar/)
+* [Live demo](http://cllacdn.tamu.edu/calendar/)
 
 ## License
 
@@ -98,7 +98,7 @@ To integrate this software onto a web page (the old synchronous way),
 you basically need to add four things in your HTML.
 Let the demo `synchronous.html` be your guide.
 
-1. The configuration script block, which configures parameters like your feed's address. Put it in the `&lt;HEAD&gt;` of the document.
+1. The configuration script block, which configures parameters like your feed's address. Put it in the `<HEAD>` of the document.
 2. The text/html script elements, which are the output templates for this script. You can put them almost anywhere.
 3. The prerequisite jQuery & Google.com/jsapi script tags and then tamufeed.js. Put them in the same sequence near the closing &lt;/BODY&gt; tag at the bottom (but above #4).
 4. And finally, copy the bottom-most inline script block in the demo's HTML
@@ -266,7 +266,7 @@ These work should be working fine:
 ## Style
 
 You'll want to write some CSS styles to govern the appearance of your
-feed on your page. Feel free to copy liberally from the styles.css, if they
+feed on your page. Feel free to copy liberally from the `styles.css` if they
 help you.  Firebug or Safari or Chrome's F12 developer tools are quite helpful,
 for introspecting the HTML and trying out styles that you can then put into
 your own CSS.
