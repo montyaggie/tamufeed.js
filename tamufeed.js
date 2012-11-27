@@ -8,7 +8,7 @@ var tamufeed = (function(window, $, google, undefined) {
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.4';
+  var VERSION = '0.1.5';
 
   // Stores
   // -------------
@@ -22,6 +22,7 @@ var tamufeed = (function(window, $, google, undefined) {
   var debugging   = config.debugging    || false;
   var feed        = config.feed         || [];
   var entries     = config.entries      || [];
+  var lang        = config.language     || "en";
   var sortorder   = config.sort         || "";
   var fetchEntries= config.fetchEntries || 4;
   var wantEntries = config.wantEntries  || 99;
@@ -34,6 +35,35 @@ var tamufeed = (function(window, $, google, undefined) {
   if ("string"===typeof selector) selector = {"stage":selector};
   var feeduri = config.url;
   if ("string"===typeof feeduri) feeduri = [feeduri];
+
+
+  // Localized langauge strings
+  // --------------------------
+    var ordinals=[], weekdays=[], weekdays3=[], months=[], months3=[];
+    ordinals['en']  = ["th","st","nd","rd","th","th","th","th","th","th"];
+    ordinals['es']  = ["","","","","","","","","",""];
+    weekdays3['en'] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    weekdays3['es'] = [ "Do",  "Lu",  "Ma",  "Mi",  "Ju",  "Vi",  "Sa"];
+    weekdays['en']  = [
+      "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"
+    ];
+    weekdays['es']  = [
+      "domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"
+    ];
+    months3['en']   = [
+      "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+    months3['es']   = [ 
+      "Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"
+    ];
+    months['en']    = [
+      "January", "February", "March" ,"April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+    months['es']    = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio", 
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ];
 
 
   // Polyfills / shims
@@ -105,25 +135,23 @@ var tamufeed = (function(window, $, google, undefined) {
     if (!d.getMinutes) error("Invalid dt(parameter) was "+typeof d);
     var minutes = d.getMinutes();
     var hours = d.getHours();
-    var ampm  = "am";
-    if (hours>=12) {hours-=12; ampm="pm"; if (!hours) hours=12;}
+    var ampm  = "a.m.";
+    if (hours>=12) {hours-=12; ampm="p.m."; if (!hours) hours=12;}
     var jday= d.getDate();
-    var ordinal = "th";
-    if (1===jday) ordinal = "st";
-    if (2===jday) ordinal = "nd";
-    if (3===jday) ordinal = "rd";
+    var ordin = ordinals[lang][jday%10];
     if (minutes<10) {minutes="0"+minutes;}
     var dday= (jday<10) ? "0"+jday : jday;
     var weekday = d.getDay();
-    var Dday= ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][weekday];
-    var lday= ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][weekday];
-    var month = d.getMonth()+1;
-    var mmonth = (month<10) ? "0"+month : month;
-    var Mmonth= ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][month]
-    var Fmonth= ["","January","February","March","April","May","June","July","August","September","October","November","December"][month]
+    var Dday= weekdays3[lang][weekday];
+    var lday= weekdays[lang][weekday];
+    var month = d.getMonth();
+    var Mmonth= months3[lang][month];
+    var Fmonth= months[lang][month];
+    month++;
+    var mmonth = (month<=9) ? "0"+(month) : month;
     return {
        "w": weekday         //day of the week (0-6 for Sun-Sat)
-      ,"S": ordinal         //English ordinal suffix for day ["st","nd","rd","th"]
+      ,"S": ordin           //ordinal suffix for day, en=["st","nd","rd","th"]
       ,"j": jday            //day of the month (1-31)
       ,"d": dday            //day of the month (01-31) with leading zeros
       ,"D": Dday            //day of the month e.g. Mon or Tue
