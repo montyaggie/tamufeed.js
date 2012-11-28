@@ -20,7 +20,7 @@
   var tamufeed = {
     "selector": "#tamufeed"
     ,"debugging": true
-    ,"language": "es"
+/*  ,"language": "es" /**/
     //,"sort": "shuffle"
     ,"fetchEntries": 10
     ,"wantEntries" :  6
@@ -69,15 +69,14 @@
     ,"baseUrl"      : "."   //Set this path /to/place/where/ your JS app resides.
     ,"waitSeconds"  : 4     //Tighter timeout than default 7 seconds
     ,"deps"         : ["tamufeed"]
-//  ,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing
+//  ,"urlArgs"      : "bustcache="+(new Date()).getTime() //for developing only
     ,"paths": {
       "jquery": [
-        "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min"
-        ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min"
-        ,"http://ajax.tamu.edu/ajax/libs/jquery/1.8.1/jquery.min"
+        "http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min"
+        ,"http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min"
         ,"http://cdnjs.cloudflare.com/ajax/libs/zepto/1.0rc1/zepto.min"
       ]
-      ,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here
+      ,"google": "https://www.google.com/jsapi?" //?key=your_google_api_key_here&
       ,"underscore"  : [
         "http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.8.2/lodash.min"
         ,"http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min"
@@ -87,10 +86,11 @@
     }//^paths 
     ,"shim": {
       "google"        : { exports: "google"}
+      ,"PubSub"       : { exports: "PubSub"}
       ,"underscore"   : { exports: "_"}
       ,"underscorestr": { exports: "_",        deps: ["underscore" ]}
       ,"Backbone"     : { exports: "Backbone", deps: ["underscore" ]}
-      ,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery" ]}
+      ,"tamufeed"     : { exports: "tamufeed", deps: ["google", "jquery", "PubSub" ]}
     }//^shim 
   }//^require 
 </script>
