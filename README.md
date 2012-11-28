@@ -55,7 +55,7 @@ that you must have to get started:
 
 1. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 of 2015
 2. [jQuery](http://jquery.com/) or [zepto.js](http://zeptoJS.com/)
-3. [pubsub.js](https://github.com/mroderick/PubSubJS/blob/master/src/pubsub.js) by Morgan Roderick
+3. [PubSub.js](https://github.com/mroderick/PubSubJS/blob/master/src/pubsub.js) by Morgan Roderick
 
 ### Optional Dependencies
 
@@ -128,7 +128,7 @@ Here is an example of #3:
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
-    <script src="/path/on/your/server/to/pubsub.js" charset="utf-8"></script>
+    <script src="/path/on/your/server/to/PubSub.js" charset="utf-8"></script>
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
@@ -140,7 +140,7 @@ It looks like this:
     <script>
     if ("undefined"===typeof $) alert("jQuery was not loaded.");
     if ("undefined"===typeof google) alert("Google JS API was not loaded.");
-    if ("undefined"===typeof tamufeed) alert("tamufeed.js was not loaded.");
+    if ("function"!==typeof tamufeed.init) alert("tamufeed.js was not loaded.");
     else tamufeed.init();
     </script>
 
