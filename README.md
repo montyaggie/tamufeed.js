@@ -13,7 +13,7 @@ This is the easiest JavaScript app for adding any RSS or Atom news feed
 to your web page. 
 And it can be used for displaying event feeds like Texas A&M calendars.
 It's flexible enough to customize its design as you like it, so
-the form and appearance your purview.
+the form and appearance are your purview.
 
 ## Getting Started
 
