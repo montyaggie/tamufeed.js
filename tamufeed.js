@@ -256,12 +256,24 @@ var tamufeed = (function(window, $, google, undefined) {
 
   var viewEntry = function(e,entry,quantity){
   //This function builds the view for an entry.
+  /* Parameters: 
+   *  e is the index # of this entry\
+   *  entry is the object containing all modelled entry properties
+   *  quantity is the feed's quantity of entries?
+  /**/
     var day,timespan,dtstart,dtend,dateBlock;
     var attributes = ["odd ","even"][e%2];
     if (entry.type.indexOf("event")>=0) attributes += " vevent";
     else if (entry.type.indexOf("person")>=0) attributes += " vcard";
     if (entry.historical) attributes += " historical";
-    //debug("» viewEntry #"+(e+1)+" type "+entry.type);
+
+    //just too chatty?
+    debug("» viewEntry #"+(e+1)+" ("+entry.type+"), #images="+entry.images.length);
+
+    //- images -----------------------------------
+    $.each( entry.images, function( i, img ) {
+      debug("  img src="+img.src);
+    });//each
 
     if (entry.dtstart) { //---------------------
       timespan = dtstart = viewProperty("dtstart",entry.dtstart,{"iso8601":entry.dtstartISO8601});
@@ -340,15 +352,17 @@ var tamufeed = (function(window, $, google, undefined) {
   //This function builds the view for all feeds, synchronously.
   //Pubsub: subscribes feed/html, publishes callername/html
     debug("» View response");
-    $.each(feeduri, function(f,feeduri) { 
-      putDOM(element.stage,t(feedTemplate,viewFeed(f)));
-      element.stage.attr("data-tamufeed",VERSION);               //leave a mark
-    });
+    $(function() {      //document.ready
+      $.each(feeduri, function(f,feeduri) { 
+        putDOM(element.stage,t(feedTemplate,viewFeed(f)));
+        element.stage.attr("data-tamufeed",VERSION);               //leave a mark
+      });//each
+    });//document.ready 
   }//function view
 
 
   var putDOM = function(/* Object */element, /* String */html, /* Boolean */overwrite) {
-  //This function puts HTML into the DOM.
+  //This function puts HTML into the DOM presuming document.ready
     debug("» putDOM "+(!!overwrite ? "overwrite" : "append"));
     if (overwrite) element.html(html); //Clear the stage.
     else element.append(html);
@@ -396,17 +410,24 @@ var tamufeed = (function(window, $, google, undefined) {
     r.pubDate = new Date(r.publishedDate);
     //---------------IMAGES---------------
     r.images = $.each( $(r.description).find("img"), function(i,img) {
-      var ele=$(img);
+      var invalid, ele=$(img);
       img = {};
       img.src   = encodeURI( ele.attr("src"   ) || "");
-      if (img.src.indexOf("gravatar.com/avatar")) ele.addClass("photo gravatar");
-      img.class = escapeHTML(ele.attr("class" )); //why microformats
-      img.style = escapeHTML(ele.attr("style" )); //escapeCSS, BUG!
+      if (img.src.indexOf("gravatar.com/avatar")>0) ele.addClass("photo gravatar");
+      img.class = escapeHTML(ele.attr("class" )); //why = microformats
+      img.style = escapeHTML(ele.attr("style" )); //escapeCSS, BUG! FIX TODO
       img.title = escapeHTML(ele.attr("title" ));
       img.alt   = escapeHTML(ele.attr("alt"   )) || img.title || img.class || img.src;
       img.width = escapeHTML(ele.attr("width" ));
       img.height= escapeHTML(ele.attr("height"));
       //debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
+      invalid = img.src.indexOf("feedburner.com/~") > 0;
+      if (invalid) { 
+        debug("[invalid] "+img.src); 
+        img.src="invalid"; 
+        img = null;
+        return; //dont return false cuz that breaks out of the each loop
+      }//if invalid
     });//each img of imgelements
     //^^^^^^^^^^^^^^^IMAGES^^^^^^^^^^^^^^^
     r.location = escapeHTML(trunc($(r.description).find(".location").text()));
