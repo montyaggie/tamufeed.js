@@ -9,10 +9,11 @@ on your web page
 
 ## What's it good for?
 
-The most common use case is for displaying event-type feeds, from a Texas A&M
-calendar, on a web page. And you can use it for displaying news feeds, too.
-This app empowers you to customize its design as you like it, so the form of
-appearance it takes is up to you.
+This is the easiest JavaScript app for adding any RSS or Atom news feed
+to your web page. 
+And it can be used for displaying event feeds like Texas A&M calendars.
+It's flexible enough to customize its design as you like it, so
+the form and appearance your purview.
 
 ## Getting Started
 
@@ -43,17 +44,18 @@ for details, read the `LICENSE.txt`.
 These are the files included in this distribution
 that you must have to get started:
 
-* `tamufeed.js` is the program's code
-* `synchronous.html` or `async.html` is HTML
+* `tamufeed.js` is the actual JS library
+* `synchronous.html` or `async.html` is demo's HTML
     * and `main.js` if you're going async
-* `styles.css` is the CSS
+* `styles.css` is the demo's CSS
 
 ## Dependencies
 
 ### Hard Dependencies
 
-1. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 in 2015
+1. [Google Feed API](https://developers.google.com/feed/) will continue w/o incompatible changes until 4/20 of 2015
 2. [jQuery](http://jquery.com/) or [zepto.js](http://zeptoJS.com/)
+3. [pubsub.js](https://github.com/mroderick/PubSubJS/blob/master/src/pubsub.js) by Morgan Roderick
 
 ### Optional Dependencies
 
@@ -94,7 +96,7 @@ client-side logic, you'll benefit from the high performance path.
 
 ### Easy Integration
 
-To integrate this software onto a web page (the old synchronous way), 
+To integrate this JS library onto a web page (the old synchronous way), 
 you basically need to add four things in your HTML.
 Let the demo `synchronous.html` be your guide.
 
@@ -104,13 +106,14 @@ Let the demo `synchronous.html` be your guide.
 4. And finally, copy the bottom-most inline script block in the demo's HTML
 to the bottom of your HTML (immediately following the tags from #3).
 
-Here is an example of #1:
+Following is an example of #1. Note: if you set `"debugging": true` while you're
+integrating, that's ok just be sure to turn it off before you go live.
 
     <script>
         //Configuration
         tamufeed = {
             "selector": "#tamufeed"
-            ,"fetchEntries": 9
+            ,"fetchEntries": 10
             ,"url": [
               "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
               ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
@@ -123,7 +126,7 @@ Make sure they're above the things in the next two steps.
 
 Here is an example of #3:
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
@@ -147,7 +150,7 @@ your copy of social media icons, JavaScripts, et cetera.
 
 ### High Performance integration
 
-Loading JavaScript software asynchronously speeds your page load performance
+Loading JavaScript libraries asynchronously speeds your page load performance
 because it lets scripts load in parallel (instead of serially).
 Is async the best practice for high performance?
 
@@ -169,7 +172,7 @@ want tamufeed to insert its output into, e.g. `<div id="tamufeed"></div>`.
 ## Configuration
 
 These parameters are set in the `tamufeed` object
-in the `&lt;HEAD&gt;` of the HTML document
+in the `<HEAD>` of the HTML document
 (use [JSON](http://www.json.org/) format).
 
 * `url` feed address; this can be one string for your RSS. Or an array of strings, for several.
