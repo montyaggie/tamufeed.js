@@ -128,6 +128,7 @@ Here is an example of #3:
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
+    <script src="/path/on/your/server/to/pubsub.js" charset="utf-8"></script>
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
@@ -140,7 +141,7 @@ It looks like this:
     if ("undefined"===typeof $) alert("jQuery was not loaded.");
     if ("undefined"===typeof google) alert("Google JS API was not loaded.");
     if ("undefined"===typeof tamufeed) alert("tamufeed.js was not loaded.");
-    else $(function() { tamufeed.init(); });
+    else tamufeed.init();
     </script>
 
 When you've got things running, remove your reliance on the files, styles &
