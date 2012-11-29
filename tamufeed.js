@@ -8,7 +8,7 @@ var tamufeed = (function(window, $, google, undefined) {
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.5';
+  var VERSION = '0.1.6';
 
   // Stores
   // -------------
@@ -414,10 +414,10 @@ var tamufeed = (function(window, $, google, undefined) {
       img = {};
       img.src   = encodeURI( ele.attr("src"   ) || "");
       if (img.src.indexOf("gravatar.com/avatar")>0) ele.addClass("photo gravatar");
-      img.class = escapeHTML(ele.attr("class" )); //why = microformats
+      img.clas  = escapeHTML(ele.attr("class" )); //why = microformats
       img.style = escapeHTML(ele.attr("style" )); //escapeCSS, BUG! FIX TODO
       img.title = escapeHTML(ele.attr("title" ));
-      img.alt   = escapeHTML(ele.attr("alt"   )) || img.title || img.class || img.src;
+      img.alt   = escapeHTML(ele.attr("alt"   )) || img.title || img.clas || img.src;
       img.width = escapeHTML(ele.attr("width" ));
       img.height= escapeHTML(ele.attr("height"));
       //debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
@@ -552,7 +552,7 @@ var tamufeed = (function(window, $, google, undefined) {
   // Network Service Handling Functions
   // ==================================
 
-  var init = function() {
+  var init = function(msg,data) {
   //This function initializes everything. 
   //Tightly coupled: calls the service loader.
     debug("» init");
@@ -599,6 +599,9 @@ var tamufeed = (function(window, $, google, undefined) {
     //Pubsub: publish name+"/feed/raw"
     controllerFeed(f); //instead of tightly coupled to controllerFeed.
   }//function putFeed
+
+
+  //PubSub.subscribe('go', init);
 
   return {
     VERSION: VERSION
