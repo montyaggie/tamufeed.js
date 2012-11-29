@@ -19,7 +19,7 @@ the form and appearance are your purview.
 
 To download, click on [tags](/montyaggie/tamufeed.js/tags)
 and grab the latest zip e.g.
-[0.1.5](/montyaggie/tamufeed.js/archive/0.1.5.zip).
+[0.1.6](/montyaggie/tamufeed.js/archive/0.1.6.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser. (You can turn it off again when you're 
 ready to deploy your work.)
@@ -82,7 +82,12 @@ in every entry's `content`.
 
 ## How to use
 
-There are two ways to integrate tamufeed.js into your web page or CMS theme.
+The purpose of the demo is to show one possible use of this JavaScript
+library. Although it cannot (and does not) illustrate most of the possibilities
+of how to leverage this library, it is a good quarry to mine when you're
+just getting started.
+
+Here are two ways to integrate tamufeed.js into your web page (or CMS theme).
 
 1. Easy (synchronous)
 2. High Performance (asynchronous)
@@ -132,7 +137,7 @@ Here is an example of #3:
     <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
-of your own HTML's body. It has four lines. Three lines test that global exports
+of your own HTML's body. It has five lines. Four lines test that global exports
 of scripts which should be loaded exist, and the last line tells tamufeed to
 initialize when [document.ready](http://api.jquery.com/ready/) happens.
 It looks like this:
@@ -140,6 +145,7 @@ It looks like this:
     <script>
     if ("undefined"===typeof $) alert("jQuery was not loaded.");
     if ("undefined"===typeof google) alert("Google JS API was not loaded.");
+    if ("undefined"===typeof PubSub) alert("PubSub.js was not loaded.");
     if ("function"!==typeof tamufeed.init) alert("tamufeed.js was not loaded.");
     else tamufeed.init();
     </script>
