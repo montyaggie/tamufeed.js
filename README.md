@@ -99,6 +99,17 @@ advantage of the high performance of an asynchronous loader (like WordPress),
 take the easy road.  But, if your web applications use some
 client-side logic, you'll benefit from the high performance path.
 
+## Changelog (or release notes)
+
+When someone stars, follows or forks this repo,
+I'll start a changelog and stop breaking the API with every release;
+promise.
+
+## Open Source 
+
+The means of showing interest in this project and subscribing to news about
+its changes is to fork, follow, or star this repo on github.
+
 ### Easy Integration
 
 To integrate this JS library onto a web page (the old synchronous way), 
