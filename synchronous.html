@@ -120,16 +120,21 @@
 </script>
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^TEMPLATE^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" charset="utf-8"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js" charset="utf-8"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/0.8.2/lodash.min.js" charset="utf-8"></script>
 <script src="https://www.google.com/jsapi?" charset="utf-8"></script>
-<script src="./PubSub.js" charset="utf-8"></script>
-<script src="./tamufeed.js" charset="utf-8"></script>
+<script src="./PubSub.min.js" charset="utf-8"></script>
+<script src="./tamufeed.min.js" charset="utf-8"></script>
 
 <script>
 if ("undefined"===typeof $) alert("jQuery was not loaded.");
+if ("undefined"===typeof _) alert("Underscore.js was not loaded.");
 if ("undefined"===typeof google) alert("Google JS API was not loaded.");
+if ("undefined"===typeof PubSub) alert("PubSub.js was not loaded.");
 if ("function"!==typeof tamufeed.init) alert("tamufeed.js was not loaded.");
-else tamufeed.init();
+else {
+  tamufeed.init();
+}
 </script>
 </body>
 </html>
