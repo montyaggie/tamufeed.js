@@ -1,21 +1,22 @@
-/* * * * * *
-  tamufeed
-/* * * * * */
+//PubSubJS ©2013 Morgan Roderick http://mrgnrdrck.mit-license.org
+(function(a,c,b){var d=typeof module=="object"&&typeof require=="function";if(d){module.exports=b(a,c)}else{if(typeof define==="function"&&typeof define.amd==="object"){define(b)}else{c[a]=b(a,c)}}}("PubSub",(typeof window!=="undefined"&&window)||this,function definition(a,b){var l={name:"PubSubJS",version:"1.3.2"},g={},j=-1;function k(n){return function m(){throw n}}function d(n,o,p){try{n(o,p)}catch(m){setTimeout(k(m),0)}}function h(m,n,o){m(n,o)}function f(n,q,r,t){var s=g[q],m=t?h:d,p,o;if(!g.hasOwnProperty(q)){return}for(p=0,o=s.length;p<o;p++){m(s[p].func,n,r)}}function e(m,n,p){return function o(){var r=String(m),q=r.lastIndexOf(".");f(m,m,n,p);while(q!==-1){r=r.substr(0,q);q=r.lastIndexOf(".");f(m,r,n)}}}function i(o){var n=String(o),p=g.hasOwnProperty(n),m=n.lastIndexOf(".");while(!p&&m!==-1){n=n.substr(0,m);m=n.lastIndexOf(".");p=g.hasOwnProperty(n)}return p}function c(o,p,n,r){var q=e(o,p,r),m=i(o);if(!m){return false}if(n===true){q()}else{setTimeout(q,0)}return true}l.publish=function(m,n){return c(m,n,false,l.immediateExceptions)};l.publishSync=function(m,n){return c(m,n,true,l.immediateExceptions)};l.subscribe=function(o,n){if(!g.hasOwnProperty(o)){g[o]=[]}var m=String(++j);g[o].push({token:m,func:n});return m};l.unsubscribe=function(u){var s=typeof u==="string",r=s?"token":"func",t=s?u:true,o=false,n,q,p;for(n in g){if(g.hasOwnProperty(n)){for(q=g[n].length-1;q>=0;q--){if(g[n][q][r]===u){g[n].splice(q,1);o=t;if(s){return o}}}}}return o};return l}));
 
-var tamufeed = (function(window, $, google, undefined) {
+//
+//  tamufeed.js
+//
+
+var tamufeed = (function (window, $, google) {
 /*****************************************************************************/
 
   // Initial Setup
   // -------------
   "use strict";
-  var VERSION = '0.1.6';
+  var VERSION = '0.1.7'
 
-  // Stores
-  // -------------
-  var service;            //saves the link to google.feeds
-  var payload = [];       //saves the payloads returned from google.feeds
-  var element = {};       //saves the jQuery element of the stage
-  var name = "tamufeed";  //each instantiation should have a unique name
+  var service           //saves the link to google.feeds
+    ,payload = []       //saves the payloads returned from google.feeds
+    ,element = {}       //saves the jQuery element of the stage
+    ,name = "tamufeed"; //each instantiation should have a unique name
 
   // Configuration
   var config = tamufeed; //from global namespace
@@ -71,28 +72,21 @@ var tamufeed = (function(window, $, google, undefined) {
 
   // Date.now
   Date.valueOf = Date.now = Date.now || function() { return +new Date; };
+  //developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/forEach
+  if ( !Array.prototype.forEach ) {
+    Array.prototype.forEach = function(fn, scope) {
+      for(var i = 0, len = this.length; i < len; ++i)
+        fn.call(scope, this[i], i, this);
+    }//function
+  }//if
 
-  //whattheheadsaid.com/2011/04/internet-explorer-9s-problematic-console-object 
-  if (console && typeof console.log == "object" && Function.prototype.bind) {
-    [
-      "log","info","warn","error","assert","dir","clear","profile","profileEnd"
-    ].forEach(function (method) {
-      console[method] = this.call(console[method], console);
-    }, Function.prototype.bind);
-  }//whattheheadsaid.com/2011/04/internet-explorer-9s-problematic-console-object
-
-  // console
-  if ("undefined"===typeof console)
-    console = (function(){ z = function(){}; return { 
-      log:z ,trace:z ,count:z ,dir:z ,dirxml:z 
-      ,debug:z, info:z ,warn:z ,error:z
-      ,group:z ,groupCollapsed:z ,groupEnd:z
-      ,profile:z ,profileEnd:z ,time:z ,timeEnd:z ,assert:z
-  }})();
-
-  // debugging functions
-  var error = alert || $.error || console.error;
-  var debug = function(msg){if (debugging) return console.debug(msg);};
+  var logger = {
+    debug: (
+        "undefined"===typeof console || "undefined"===typeof console.log
+        ? function(){} // IE
+        : function(msg){if (debugging) return console.log(msg);} 
+      )
+  }//logger
 
   // CSS Selectors
   selector.stage = selector.stage || "#tamufeed";
@@ -101,7 +95,7 @@ var tamufeed = (function(window, $, google, undefined) {
   selector.feedTemplate        = selector.feedTemplate     || "#feedTemplate";
   selector.dateTemplate        = selector.dateTemplate     || "#dateTemplate";
   selector.encasedTemplate     = selector.encasedTemplate  || "#encasedTemplate";
-  selector.dateBlockTemplate = selector.dateBlockTemplate || "#dateBlockTemplate";
+  selector.dateBlockTemplate   = selector.dateBlockTemplate|| "#dateBlockTemplate";
 
   // Load Templates
   var dateTemplate    = $(selector.dateTemplate).html();
@@ -241,7 +235,7 @@ var tamufeed = (function(window, $, google, undefined) {
 
   var viewProperty = function(key,val,data,template){
   //This function builds the view for a property.
-    //debug("» Property View: key="+key);
+    //logger.logger.debug("» Property View: key="+key);
     if (!template) template = propertyTemplate;
     var dataAttr = "";
     if ("undefined"!==typeof data) 
@@ -268,11 +262,11 @@ var tamufeed = (function(window, $, google, undefined) {
     if (entry.historical) attributes += " historical";
 
     //just too chatty?
-    debug("» viewEntry #"+(e+1)+" ("+entry.type+"), #images="+entry.images.length);
+    logger.debug("» viewEntry #"+(e+1)+" ("+entry.type+"), #images="+entry.images.length);
 
     //- images -----------------------------------
     $.each( entry.images, function( i, img ) {
-      debug("  img src="+img.src);
+      logger.debug("  img src="+img.src);
     });//each
 
     if (entry.dtstart) { //---------------------
@@ -319,7 +313,7 @@ var tamufeed = (function(window, $, google, undefined) {
 
   var viewFeed = function(f) {
   //This function builds the view for a feed.
-    debug("» viewFeed #"+(f+1));
+    logger.debug("» viewFeed #"+(f+1));
     var e=0, markup = '', novel=0;
     var feedAttributes = ["odd ","even"][f%2];
     feedAttributes += " "+feed[f]["type"];
@@ -351,7 +345,7 @@ var tamufeed = (function(window, $, google, undefined) {
   var view = function() {
   //This function builds the view for all feeds, synchronously.
   //Pubsub: subscribes feed/html, publishes callername/html
-    debug("» View response");
+    logger.debug("» View response");
     $(function() {      //document.ready
       $.each(feeduri, function(f,feeduri) { 
         putDOM(element.stage,t(feedTemplate,viewFeed(f)));
@@ -363,7 +357,7 @@ var tamufeed = (function(window, $, google, undefined) {
 
   var putDOM = function(/* Object */element, /* String */html, /* Boolean */overwrite) {
   //This function puts HTML into the DOM presuming document.ready
-    debug("» putDOM "+(!!overwrite ? "overwrite" : "append"));
+    logger.debug("» putDOM "+(!!overwrite ? "overwrite" : "append"));
     if (overwrite) element.html(html); //Clear the stage.
     else element.append(html);
   }//function view
@@ -374,7 +368,7 @@ var tamufeed = (function(window, $, google, undefined) {
 
   var modelEntry = function(f,e) {
   //This function models one entry.
-    debug("» modelEntry feed #"+(f+1)+" entry #"+(e+1));
+    logger.debug("» modelEntry feed #"+(f+1)+" entry #"+(e+1));
     var entry = payload[f].feed.entries[e];
     var isoAttr;
     var r = {
@@ -409,7 +403,8 @@ var tamufeed = (function(window, $, google, undefined) {
     //--------------------------DATE/TIME--------------------------
     r.pubDate = new Date(r.publishedDate);
     //---------------IMAGES---------------
-    r.images = $.each( $(r.description).find("img"), function(i,img) {
+    r.images = [];
+    $(r.description).find("img").each( function(i,img) {
       var invalid, ele=$(img);
       img = {};
       img.src   = encodeURI( ele.attr("src"   ) || "");
@@ -420,15 +415,11 @@ var tamufeed = (function(window, $, google, undefined) {
       img.alt   = escapeHTML(ele.attr("alt"   )) || img.title || img.clas || img.src;
       img.width = escapeHTML(ele.attr("width" ));
       img.height= escapeHTML(ele.attr("height"));
-      //debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
+      //logger.debug('<img alt="'+img.alt+'" src="'+img.src+'"/>');
       invalid = img.src.indexOf("feedburner.com/~") > 0;
-      if (invalid) { 
-        debug("[invalid] "+img.src); 
-        img.src="invalid"; 
-        img = null;
-        return; //dont return false cuz that breaks out of the each loop
-      }//if invalid
-    });//each img of imgelements
+      if (invalid) logger.debug("[invalid] "+img.src); 
+      else ;//r.images.push(img);
+    });//each
     //^^^^^^^^^^^^^^^IMAGES^^^^^^^^^^^^^^^
     r.location = escapeHTML(trunc($(r.description).find(".location").text()));
     r.fn  = escapeHTML(trunc($(r.description).find(".fn").text()));
@@ -462,7 +453,7 @@ var tamufeed = (function(window, $, google, undefined) {
   var modelFeed = function(f){
   //This function builds the model for a feed.
     var quantity = payload[f].feed.entries.length;
-    debug("» modelFeed #"+(f+1)+" has "+quantity+" entries");
+    logger.debug("» modelFeed #"+(f+1)+" has "+quantity+" entries");
     var type=""; //initialize the feed's type
     var e=0;
     entries[f] = [];
@@ -503,9 +494,9 @@ var tamufeed = (function(window, $, google, undefined) {
   //Pubsub: subscribe to "/feed/raw"
   //This function controls view of all feeds; it calls view.
   //Pubsub: subscribe to "/feed/json" publish "/feed/html"
-    debug("» controllerFeed #"+(f+1));
+    logger.debug("» controllerFeed #"+(f+1));
     if (payload[f].error) {
-      debug("- result.error "+payload[f].error.code+": "+payload[f].error.message);
+      logger.debug("- result.error "+payload[f].error.code+": "+payload[f].error.message);
       return putDOM(element.stage,
         t(feedTemplate,{
           "feedUrl" : "" 
@@ -531,7 +522,7 @@ var tamufeed = (function(window, $, google, undefined) {
   //Pubsub: subscribe to "/request"
     if (feed.quantity) feed.countdown = feed.quantity;    //if deja vu, reset countdown
     else feed.quantity = feed.countdown = feeduri.length; //else init everything
-    debug("» controller of request - for "+feed.quantity+" feeds");
+    logger.debug("» controller of request - for "+feed.quantity+" feeds");
     //element.stage.attr("data-children",feed.quantity); //no no.
     putDOM(element.stage,"","overwrite");//clear the stage
     $.each(feeduri,function(f,feeduri){
@@ -555,7 +546,7 @@ var tamufeed = (function(window, $, google, undefined) {
   var init = function(msg,data) {
   //This function initializes everything. 
   //Tightly coupled: calls the service loader.
-    debug("» init");
+    logger.debug("» init");
     if ("undefined"===typeof google) throw "FAIL! google.com/jsapi failed to load before tamufeed.js";
     // Bind element from selector
     element.stage = $(selector.stage);
@@ -563,12 +554,12 @@ var tamufeed = (function(window, $, google, undefined) {
       putAPI();                             //then call putAPI now.
     if (element.stage) 
       google.load("feeds","1",{"callback":putAPI,"nocss":true});
-    else debug("INFO: tamufeed.element.stage not found.");
+    else logger.debug("INFO: tamufeed.element.stage not found.");
   }//function init
 
   var destroy = function() {
   //This function is the opposite of init; it tears down everything built.
-    debug("» destroy");
+    logger.debug("» destroy");
     payload = [];
     element.stage = {};   //This is small
     //service = undefined;  //This is small
@@ -577,9 +568,9 @@ var tamufeed = (function(window, $, google, undefined) {
   var putAPI = function() {
   //Callback of the service provider.
   //This function puts the service API object. Then calls controller.
-    debug("» putAPI");
+    logger.debug("» putAPI");
     if ("undefined"===typeof google.feeds) {
-      debug("CRIT: google.feeds failed to initialize.");
+      logger.debug("CRIT: google.feeds failed to initialize.");
       throw "google.feeds API failure";
     }//if undefined google.feeds
     service = google.feeds;
@@ -590,9 +581,9 @@ var tamufeed = (function(window, $, google, undefined) {
   var putFeed = function(servresult,f) {
   //Callback of the service feeds API.
   //This function puts the service result. Then calls the feed controller.
-    debug("» putFeed #"+(f+1));
+    logger.debug("» putFeed #"+(f+1));
     if ("undefined"===typeof servresult) {
-      debug("CRIT: google.feeds.load failed to return payload.");
+      logger.debug("CRIT: google.feeds.load failed to return payload.");
       throw "google.feeds.load service failure.";
     }
     payload[f] = servresult;
