@@ -19,7 +19,7 @@ the form and appearance are your purview.
 
 To download, click on [tags](/montyaggie/tamufeed.js/tags)
 and grab the latest zip e.g.
-[0.1.6](/montyaggie/tamufeed.js/archive/0.1.6.zip).
+[0.1.7](/montyaggie/tamufeed.js/archive/0.1.7.zip).
 For your first run, we recommend turning on debugging and watching the
 F12 console in your browser. (You can turn it off again when you're 
 ready to deploy your work.)
@@ -39,7 +39,7 @@ but you have access to the source code and may modify and redistribute
 our software subject to certain restrictions;
 for details, read the `LICENSE.txt`.
 
-## Files
+## File structure
 
 These are the files included in this distribution
 that you must have to get started:
@@ -80,6 +80,17 @@ We retrieve news feeds from Google, recognizing
 [microformats](http://microformats.org/), such as calendar items,
 in every entry's `content`.
 
+## Changelog (or release notes)
+
+When someone stars, follows or forks this repo,
+I'll start a changelog and stop breaking the API with every release;
+promise.
+
+## Open Source 
+
+The means of showing interest in this project and subscribing to news about
+its changes is to fork, follow, or star this repo on github.
+
 ## How to use
 
 The purpose of the demo is to show one possible use of this JavaScript
@@ -99,17 +110,6 @@ advantage of the high performance of an asynchronous loader (like WordPress),
 take the easy road.  But, if your web applications use some
 client-side logic, you'll benefit from the high performance path.
 
-## Changelog (or release notes)
-
-When someone stars, follows or forks this repo,
-I'll start a changelog and stop breaking the API with every release;
-promise.
-
-## Open Source 
-
-The means of showing interest in this project and subscribing to news about
-its changes is to fork, follow, or star this repo on github.
-
 ### Easy Integration
 
 To integrate this JS library onto a web page (the old synchronous way), 
@@ -122,30 +122,33 @@ Let the demo `synchronous.html` be your guide.
 4. And finally, copy the bottom-most inline script block in the demo's HTML
 to the bottom of your HTML (immediately following the tags from #3).
 
-Following is an example of #1. Note: if you set `"debugging": true` while you're
-integrating, that's ok just be sure to turn it off before you go live.
+Following is an example of #1 script block.
+Note: if you set `"debugging": true` while you're integrating, that's ok
+just be sure to turn it off before you go live.
 
-    <script>
-        //Configuration
-        tamufeed = {
-            "selector": "#tamufeed"
-            ,"fetchEntries": 10
-            ,"url": [
-              "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
-              ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
-            ]
-        }//tamufeed
-    </script>
+``` js
+//Configuration
+tamufeed = {
+    "selector": "#tamufeed"
+    ,"fetchEntries": 10
+    ,"url": [
+      "http://calendar.tamu.edu/anthropology/upcoming/?format=rss"
+      ,"http://calendar.tamu.edu/anthropologydeadlines/upcoming/?format=rss"
+    ]
+}//tamufeed
+```
 
 For #2, the templates can be copied verbatim out of the `synchronous.html` sample.
 Make sure they're above the things in the next two steps.
 
 Here is an example of #3:
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
-    <script src="/path/on/your/server/to/PubSub.js" charset="utf-8"></script>
-    <script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
+``` html
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="https://www.google.com/jsapi?key=YOUR_GOOGLE_API_KEY_HERE"></script>
+<script src="/path/on/your/server/to/PubSub.js" charset="utf-8"></script>
+<script src="/path/on/your/server/to/tamufeed.js" charset="utf-8"></script>
+```
 
 For #4, make sure that you copy the bottom-most `<script>` block to the bottom
 of your own HTML's body. It has five lines. Four lines test that global exports
@@ -153,13 +156,13 @@ of scripts which should be loaded exist, and the last line tells tamufeed to
 initialize when [document.ready](http://api.jquery.com/ready/) happens.
 It looks like this:
 
-    <script>
-    if ("undefined"===typeof $) alert("jQuery was not loaded.");
-    if ("undefined"===typeof google) alert("Google JS API was not loaded.");
-    if ("undefined"===typeof PubSub) alert("PubSub.js was not loaded.");
-    if ("function"!==typeof tamufeed.init) alert("tamufeed.js was not loaded.");
-    else tamufeed.init();
-    </script>
+``` js
+if ("undefined"===typeof $) alert("jQuery was not loaded.");
+if ("undefined"===typeof google) alert("Google JS API was not loaded.");
+if ("undefined"===typeof PubSub) alert("PubSub.js was not loaded.");
+if ("function"!==typeof tamufeed.init) alert("tamufeed.js was not loaded.");
+else tamufeed.init();
+```
 
 When you've got things running, remove your reliance on the files, styles &
 graphics hosted on *our* demo [server](http://cllacdn.tamu.edu/html/home.html).
